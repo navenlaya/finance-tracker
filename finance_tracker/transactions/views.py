@@ -27,4 +27,8 @@ def upload_transactions(request):
 
     return render(request, 'transactions/upload.html', {'form': form})
 
-# Create your views here.
+@login_required
+def transaction_list(request):
+    transactions = Transaction.objects.filter(user=request.user).order_by('-date')
+    return render(request, 'transactions/list.html', {'transactions': transactions})
+

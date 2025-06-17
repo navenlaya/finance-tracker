@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'accounts', # Custom app for user accounts
+    'transactions', # Custom app for transactions
+    
 ]
 
 MIDDLEWARE = [
