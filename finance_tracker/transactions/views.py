@@ -4,6 +4,8 @@ from io import TextIOWrapper
 from django.contrib.auth.decorators import login_required
 from .forms import UploadCSVForm
 from .models import Transaction
+from .utils import categorize
+
 
 @login_required
 def upload_transactions(request):
@@ -18,7 +20,7 @@ def upload_transactions(request):
                     user=request.user,
                     date=row['Date'],
                     description=row['Description'],
-                    category=row.get('Category', 'Uncategorized'),
+                    category=row.get('Category') or categorize(row['Description']), 
                     amount=row['Amount']
                 )
             return redirect('transactions-list')
