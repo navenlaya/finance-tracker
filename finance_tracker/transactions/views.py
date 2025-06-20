@@ -42,7 +42,7 @@ def transaction_list(request):
     return render(request, 'transactions/list.html', {'transactions': transactions})
 
 @login_required
-def forcast_view(request):
+def forecast_view(request):
     # Get user's transactions
     transactions = Transaction.objects.filter(user=request.user).order_by('date')
 
@@ -54,8 +54,8 @@ def forcast_view(request):
     df = df.groupby('date').sum().reset_index()
 
     if df.empty:
-        return (request, 'transactions/forcast.html', {'message': 'No data to forcast'})
-    
+        return (request, 'transactions/forecast.html', {'message': 'No data to forecast'})
+
     df['ds'] = pd.to_datetime(df['date'])
     df['y'] = df['amount']
 
