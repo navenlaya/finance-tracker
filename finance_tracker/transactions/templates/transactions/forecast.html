@@ -1,0 +1,35 @@
+<h2>Spending Forecast (Next 30 Days)</h2>
+
+{% if message %}
+  <p>{{ message }}</p>
+{% else %}
+  <div id="chart"></div>
+  <h3>Sample Forecast Data</h3>
+  {{ forecast_table|safe }}
+{% endif %}
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+  const forecast = JSON.parse(`{{ forecast_json|escapejs }}`);
+  const dates = forecast.map(x => x.ds);
+  const yhat = forecast.map(x => x.yhat);
+  const yhat_lower = forecast.map(x => x.yhat_lower);
+  const yhat_upper = forecast.map(x => x.yhat_upper);
+
+  const trace1 = {
+    x: dates, y: yhat,
+    mode: 'lines', name: 'Prediction'
+  };
+
+  const trace2 = {
+    x: dates, y: yhat_lower,
+    mode: 'lines', name: 'Lower Bound', line: { dash: 'dot' }
+  };
+
+  const trace3 = {
+    x: dates, y: yhat_upper,
+    mode: 'lines', name: 'Upper Bound', line: { dash: 'dot' }
+  };
+
+  Plotly.newPlot('chart', [trace1, trace2, trace3]);
+</script>
