@@ -43,34 +43,34 @@ def transaction_list(request):
 
 @login_required
 def forecast_view(request):
-    # Get user's transactions
     transactions = Transaction.objects.filter(user=request.user).order_by('date')
 
     df = pd.DataFrame.from_records(
-        transactions.values('date', 'amount'),
-
+        transactions.values('date', 'amount')
     )
-
     df = df.groupby('date').sum().reset_index()
 
     if df.empty:
-        return (request, 'transactions/forecast.html', {'message': 'No data to forecast'})
+        return render(request, 'transactions/forecast.html', {
+            'message': 'No data to forecast! Please upload transactions with multiple dates.'
+        })
 
     df['ds'] = pd.to_datetime(df['date'])
     df['y'] = df['amount']
 
-    # Create and train prophet model
     model = Prophet()
     model.fit(df[['ds', 'y']])
 
-    # Create future days
-    future = model.make_future_dataFrame(period=30)
+    future = model.make_future_dataframe(periods=30)
     forecast = model.predict(future)
 
-    # Convert to JSON for fontend
-    forcast_json = forecast [['ds', 'yhat', 'yhat_lower', 'yhat_upper']].to_json(orient='records', date_format='iso')
+    forecast_json = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].to_json(
+        orient='records',
+        date_format='iso'
+    )
 
-    return render(request, 'transactions/forcast.html', {
-        'forcast_json': forcast_json,
-        'forcast_table': forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(10).to_html(classes='table table-striped'),
+    return render(request, 'transactions/forecast.html', {
+        'forecast_json': forecast_json,
+        'forecast_table': forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(10).to_html(classes='table table-striped'),
+        'message': None  
     })
