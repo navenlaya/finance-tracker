@@ -10,6 +10,8 @@ from .utils import categorize
 import pandas as pd
 from prophet import Prophet
 
+# For Insights View
+from .insights import generate_budget_insights
 
 @login_required
 # Transaction Upload View
@@ -74,3 +76,8 @@ def forecast_view(request):
         'forecast_table': forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(10).to_html(classes='table table-striped'),
         'message': None  
     })
+
+@login_required 
+def insights_view(request):
+     insights = generate_budget_insights(request.user)
+     return render(request, 'transactions/insights.html', {'insights': insights})
