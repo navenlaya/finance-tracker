@@ -22,5 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('transactions/', include('transactions.urls')),
-  
+    path('plaid/', include('plaid_integration.urls')),
+
 ]
