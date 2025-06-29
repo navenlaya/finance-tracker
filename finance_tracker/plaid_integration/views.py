@@ -5,51 +5,55 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from transactions.models import Transaction
 
-from plaid2.client import PlaidClient
-from dotenv import load_dotenv
-import os, json
-from datetime import date, timedelta
+from plaid.api import plaid_api
+from plaid.model.link_token_create_request import LinkTokenCreateRequest
+from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
+from plaid.model.products import Products
+from plaid.model.country_code import CountryCode
+from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
+from plaid.model.transactions_get_request import TransactionsGetRequest
+from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
+from plaid import Configuration, ApiClient
 
-# Correct imports for models
-from plaid2.model.link_token_create_request import LinkTokenCreateRequest
-from plaid2.model.link_token_create_request_user import LinkTokenCreateRequestUser
+from dotenv import load_dotenv
+from datetime import date, timedelta
+import os, json
 
 load_dotenv()
 
-# Initialize the Plaid client using .env vars
 def get_client():
-    return PlaidClient.from_env()
+    configuration = Configuration(
+        host="https://sandbox.plaid.com",  
+        api_key={
+            'clientId': os.getenv("PLAID_CLIENT_ID"),
+            'secret': os.getenv("PLAID_SECRET"),
+        }   
+    )
+    api_client = ApiClient(configuration)
+    return plaid_api.PlaidApi(api_client)
 
 
-# Serve the frontend page where the user can click "Link Bank"
 @login_required
 def plaid_link_page(request):
     return render(request, "plaid_integration/link.html")
 
-
-# Create a link token (needed for frontend Plaid Link)
-@login_required
 @login_required
 def create_link_token(request):
     client = get_client()
 
-    # Create the required user object
     user = LinkTokenCreateRequestUser(client_user_id=str(request.user.id))
 
-    response = client.link_token_create(
+    request_data = LinkTokenCreateRequest(
         user=user,
         client_name="Finance Tracker",
-        products=["transactions"],
-        country_codes=["US"],
+        products=[Products("transactions")],
+        country_codes=[CountryCode("US")],
         language="en"
     )
 
-    # Return JSON response
-    return JsonResponse(response.dict())
+    response = client.link_token_create(request_data)
+    return JsonResponse(response.to_dict())
 
-
-# Exchange the public_token received from the frontend for an access_token
-# Then pull recent transactions and store in DB
 @csrf_exempt
 @require_POST
 @login_required
@@ -58,31 +62,31 @@ def exchange_token(request):
     data = json.loads(request.body)
     public_token = data.get("public_token")
 
-    # Exchange public token for access token
-    exchange = client.item_public_token_exchange(public_token)
-    access_token = exchange["access_token"]
+    exchange_request = ItemPublicTokenExchangeRequest(public_token=public_token)
+    exchange_response = client.item_public_token_exchange(exchange_request)
+    access_token = exchange_response['access_token']
 
-    # Save access token to session (you can later store in DB)
     request.session["plaid_access_token"] = access_token
 
-    # Fetch last 30 days of transactions
     today = date.today()
-    thirty_days_ago = today - timedelta(days=30)
+    start_date = today - timedelta(days=180)
 
-    transactions = client.transactions_get(
+    transactions_request = TransactionsGetRequest(
         access_token=access_token,
-        start_date=thirty_days_ago.isoformat(),
-        end_date=today.isoformat()
-    )["transactions"]
+        start_date=start_date,
+        end_date=today,
+        options=TransactionsGetRequestOptions(count=100, offset=0)
+    )
 
-    # Save transactions to database
-    for tx in transactions:
+    transactions_response = client.transactions_get(transactions_request)
+
+    for tx in transactions_response['transactions']:
         Transaction.objects.create(
             user=request.user,
-            date=tx["date"],
-            description=tx["name"],
-            amount=tx["amount"],
-            category=tx["category"][0] if tx.get("category") else "Uncategorized"
+            date=tx['date'],
+            description=tx['name'],
+            amount=tx['amount'],
+            category=tx['category'][0] if tx.get("category") else "Uncategorized"
         )
 
-    return JsonResponse({"status": "ok", "imported": len(transactions)})
+    return JsonResponse({"status": "ok", "imported": len(transactions_response['transactions'])})
