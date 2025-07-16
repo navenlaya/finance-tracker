@@ -17,6 +17,13 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+const isAuthenticated = () => !!localStorage.getItem('token');
+
+const handleLogout = () => {
+  localStorage.removeItem('token');
+  window.location.href = '/login';
+};
+
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -28,6 +35,9 @@ const App: React.FC = () => {
               <Button color="inherit" component={Link} to="/register">Register</Button>
               <Button color="inherit" component={Link} to="/">Dashboard</Button>
             </Box>
+            {isAuthenticated() && (
+              <Button color="inherit" onClick={handleLogout}>Logout</Button>
+            )}
           </Toolbar>
         </AppBar>
         <Routes>
