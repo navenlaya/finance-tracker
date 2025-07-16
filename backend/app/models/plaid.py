@@ -6,6 +6,6 @@ class PlaidItem(Base):
     __tablename__ = "plaid_items"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, index=True)  # Simplified — link to users
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)  # Add foreign key constraint
     access_token = Column(String, unique=True)
     item_id = Column(String, unique=True)
