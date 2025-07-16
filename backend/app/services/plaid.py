@@ -10,6 +10,7 @@ from plaid.model.transactions_get_request import TransactionsGetRequest
 from plaid.model.accounts_get_request import AccountsGetRequest
 from app.core.config import settings
 from plaid import Configuration, ApiClient
+from app.core.security import encrypt_token, decrypt_token
 
 import datetime
 
@@ -43,11 +44,16 @@ def exchange_public_token(public_token: str):
     client = get_plaid_client()
     request = ItemPublicTokenExchangeRequest(public_token=public_token)
     response = client.item_public_token_exchange(request)
-    return response.to_dict()  # Contains access_token, item_id
+    data = response.to_dict()  # Contains access_token, item_id
+    # Encrypt the access token before returning
+    data["access_token"] = encrypt_token(data["access_token"])
+    return data
 
 # Fetch transactions from the user's linked account
 def get_transactions(access_token: str):
     client = get_plaid_client()
+    # Decrypt the access token before using it
+    access_token = decrypt_token(access_token)
     start_date = (datetime.datetime.today() - datetime.timedelta(days=30)).date()
     end_date = datetime.datetime.today().date()
 
