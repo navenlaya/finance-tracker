@@ -1,8 +1,20 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Button, Box, Typography, CircularProgress, Alert, List, ListItem, ListItemText, Divider } from '@mui/material';
+import React, { useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { Button, Box, Typography, CircularProgress, Alert, List, ListItem, ListItemText, Divider, TextField, Paper } from '@mui/material';
 import { usePlaidLink } from 'react-plaid-link';
 import api from '../api/client';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
 const fetchLinkToken = async () => {
   const res = await api.get('/plaid/link-token');
@@ -17,6 +29,11 @@ const fetchAccounts = async () => {
 const fetchTransactions = async () => {
   const res = await api.get('/plaid/transactions');
   return res.data.transactions;
+};
+
+const fetchForecast = async () => {
+  const res = await api.get('/ml/forecast');
+  return res.data.forecast;
 };
 
 const Dashboard: React.FC = () => {
@@ -35,14 +52,20 @@ const Dashboard: React.FC = () => {
     queryFn: fetchTransactions,
   });
 
+  const { data: forecast, isLoading: loadingForecast, error: errorForecast, refetch: refetchForecast } = useQuery({
+    queryKey: ['forecast'],
+    queryFn: fetchForecast,
+  });
+
   const onSuccess = React.useCallback((public_token: string, metadata: any) => {
     api.post('/plaid/exchange', { public_token })
       .then(() => {
         refetchAccounts();
         refetchTxns();
+        refetchForecast();
       })
       .catch(() => alert('Token exchange failed'));
-  }, [refetchAccounts, refetchTxns]);
+  }, [refetchAccounts, refetchTxns, refetchForecast]);
 
   const config = {
     token: linkToken,
@@ -51,8 +74,35 @@ const Dashboard: React.FC = () => {
 
   const { open, ready } = usePlaidLink(config);
 
+  // Prepare forecast chart data
+  const chartData = forecast ? {
+    labels: forecast.map((f: any) => f.ds),
+    datasets: [
+      {
+        label: 'Forecasted Spending',
+        data: forecast.map((f: any) => f.yhat),
+        borderColor: 'rgba(75,192,192,1)',
+        fill: false,
+      },
+      {
+        label: 'Lower Bound',
+        data: forecast.map((f: any) => f.yhat_lower),
+        borderColor: 'rgba(192,75,75,0.5)',
+        borderDash: [5, 5],
+        fill: false,
+      },
+      {
+        label: 'Upper Bound',
+        data: forecast.map((f: any) => f.yhat_upper),
+        borderColor: 'rgba(75,75,192,0.5)',
+        borderDash: [5, 5],
+        fill: false,
+      },
+    ],
+  } : undefined;
+
   return (
-    <Box maxWidth={800} mx="auto" mt={8}>
+    <Box maxWidth={900} mx="auto" mt={8}>
       <Typography variant="h4" mb={2}>Dashboard</Typography>
       {loadingToken && <CircularProgress />}
       {errorToken && <Alert severity="error">Failed to load Plaid Link token</Alert>}
@@ -66,6 +116,15 @@ const Dashboard: React.FC = () => {
         >
           Connect Bank Account
         </Button>
+      )}
+      <Divider sx={{ my: 4 }} />
+      <Typography variant="h6">Spending Forecast</Typography>
+      {loadingForecast && <CircularProgress />}
+      {errorForecast && <Alert severity="error">Failed to load forecast</Alert>}
+      {forecast && (
+        <Paper sx={{ p: 2, mb: 4 }}>
+          <Line data={chartData!} />
+        </Paper>
       )}
       <Divider sx={{ my: 4 }} />
       <Typography variant="h6">Linked Accounts</Typography>
@@ -92,6 +151,7 @@ const Dashboard: React.FC = () => {
           </ListItem>
         ))}
       </List>
+      <Divider sx={{ my: 4 }} />
     </Box>
   );
 };
