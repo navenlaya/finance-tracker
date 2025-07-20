@@ -79,3 +79,15 @@ def decrypt_token(token: str) -> str:
         return f.decrypt(token.encode()).decode()
     except InvalidToken:
         raise ValueError("Invalid encryption token or key.")
+
+
+if __name__ == "__main__":
+    # Simple test for encryption and decryption
+    test_token = "test-access-token-123"
+    encrypted = encrypt_token(test_token)
+    decrypted = decrypt_token(encrypted)
+    print(f"Original: {test_token}")
+    print(f"Encrypted: {encrypted}")
+    print(f"Decrypted: {decrypted}")
+    assert decrypted == test_token, "Decryption did not return the original token!"
+    print("Encryption/Decryption test passed.")
