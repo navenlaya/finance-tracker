@@ -36,6 +36,10 @@ const fetchForecast = async () => {
   return res.data.forecast;
 };
 
+const removeAccount = async (item_id: string) => {
+  await api.delete(`/plaid/remove-account`, { params: { item_id } });
+};
+
 const Dashboard: React.FC = () => {
   const { data: linkToken, isLoading: loadingToken, error: errorToken } = useQuery({
     queryKey: ['linkToken'],
@@ -73,6 +77,13 @@ const Dashboard: React.FC = () => {
   };
 
   const { open, ready } = usePlaidLink(config);
+
+  const removeMutation = useMutation({
+    mutationFn: removeAccount,
+    onSuccess: () => {
+      refetchAccounts();
+    },
+  });
 
   // Prepare forecast chart data
   const chartData = forecast ? {
@@ -132,7 +143,18 @@ const Dashboard: React.FC = () => {
       {errorAccounts && <Alert severity="error">Failed to load accounts</Alert>}
       <List>
         {accounts && accounts.map((acct: any) => (
-          <ListItem key={acct.account_id}>
+          <ListItem key={acct.account_id} secondaryAction={
+            acct.item_id && (
+              <Button
+                color="error"
+                variant="outlined"
+                size="small"
+                onClick={() => removeMutation.mutate(acct.item_id)}
+              >
+                Remove
+              </Button>
+            )
+          }>
             <ListItemText primary={acct.name} secondary={acct.official_name || acct.subtype} />
           </ListItem>
         ))}
