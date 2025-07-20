@@ -1,6 +1,6 @@
 # app/api/plaid.py
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.schemas.plaid import LinkTokenResponse, PublicTokenRequest, TokenExchangeResponse
 from app.services.plaid import create_link_token, exchange_public_token, get_transactions
@@ -45,30 +45,51 @@ def exchange_token(payload: PublicTokenRequest, db: Session = Depends(get_db), c
 @router.get("/accounts")
 def get_accounts(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
-    Fetch accounts for the authenticated user from Plaid.
+    Fetch accounts for all Plaid items linked to the authenticated user.
     """
-    item = db.query(PlaidItem).filter_by(user_id=current_user.id).first()
-    if not item:
+    items = db.query(PlaidItem).filter_by(user_id=current_user.id).all()
+    if not items:
         raise HTTPException(status_code=404, detail="No Plaid account linked.")
-    # Fetch accounts from Plaid
-    try:
-        client = get_plaid_client()
-        access_token = decrypt_token(item.access_token)
-        response = client.accounts_get({"access_token": access_token})
-        return {"accounts": response.to_dict()["accounts"]}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    all_accounts = []
+    for item in items:
+        try:
+            client = get_plaid_client()
+            access_token = decrypt_token(item.access_token)
+            response = client.accounts_get({"access_token": access_token})
+            accounts = response.to_dict()["accounts"]
+            for acct in accounts:
+                acct["item_id"] = item.item_id  # Attach item_id for frontend
+            all_accounts.extend(accounts)
+        except Exception as e:
+            continue  # Skip failed items
+    return {"accounts": all_accounts}
 
 @router.get("/transactions")
 def get_transactions_endpoint(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
-    Fetch recent transactions for the authenticated user from Plaid.
+    Fetch recent transactions for all Plaid items linked to the authenticated user.
     """
-    item = db.query(PlaidItem).filter_by(user_id=current_user.id).first()
-    if not item:
+    items = db.query(PlaidItem).filter_by(user_id=current_user.id).all()
+    if not items:
         raise HTTPException(status_code=404, detail="No Plaid account linked.")
-    try:
-        transactions = get_transactions(item.access_token)
-        return {"transactions": transactions["transactions"]}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    all_transactions = []
+    for item in items:
+        try:
+            txns_response = get_transactions(item.access_token)
+            if txns_response and "transactions" in txns_response:
+                all_transactions.extend(txns_response["transactions"])
+        except Exception as e:
+            continue  # Skip failed items
+    return {"transactions": all_transactions}
+
+@router.delete("/remove-account")
+def remove_account(item_id: str = Query(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Remove a linked Plaid account (PlaidItem) by item_id for the authenticated user.
+    """
+    item = db.query(PlaidItem).filter_by(user_id=current_user.id, item_id=item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Plaid account not found.")
+    db.delete(item)
+    db.commit()
+    return {"detail": "Plaid account removed."}
