@@ -1,4 +1,4 @@
-# 🏦 Finance Tracker
+# Finance Tracker
 
 A modern, full-stack finance tracking application with AI-powered insights and real bank account integration via Plaid API. Built with industry best practices and designed for professional portfolios.
 
@@ -8,30 +8,30 @@ A modern, full-stack finance tracking application with AI-powered insights and r
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-3178C6)
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB)
 
-## 🌟 Features
+## Features
 
-### 🔐 Core Features
+### Core Features
 - **Secure Authentication**: JWT-based authentication with password hashing
 - **Bank Integration**: Real bank account connection via Plaid API
 - **Transaction Sync**: Automatic transaction syncing and categorization
 - **Responsive Design**: Mobile-first, modern UI with dark mode support
 - **Real-time Updates**: Live transaction updates and notifications
 
-### 🤖 AI/ML Features
+### AI/ML Features (To Do)
 - **Spending Forecasting**: Predict future spending patterns using Prophet and scikit-learn
 - **Anomaly Detection**: Identify unusual transactions and potential fraud
 - **Smart Categorization**: AI-powered transaction categorization
 - **Insights Generation**: Personalized financial insights and recommendations
 - **Budget Optimization**: AI-suggested budget improvements
 
-### 📊 Dashboard & Analytics
+### Dashboard & Analytics
 - **Financial Overview**: Real-time balance, income, and expense tracking
 - **Interactive Charts**: Spending trends and category breakdowns
 - **Budget Management**: Set and track spending goals
 - **Custom Reports**: Export financial reports in multiple formats
 - **Calendar View**: Daily and weekly spending visualization
 
-## 🏗️ Architecture
+## Architecture
 
 ### Technology Stack
 
@@ -62,28 +62,7 @@ A modern, full-stack finance tracking application with AI-powered insights and r
 - **Web Server**: Nginx (production)
 - **Process Management**: Gunicorn/Uvicorn
 
-### System Architecture
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   React SPA     │    │   FastAPI       │    │   PostgreSQL    │
-│   (Frontend)    │◄──►│   (Backend)     │◄──►│   (Database)    │
-│                 │    │                 │    │                 │
-│ • Dashboard     │    │ • Auth APIs     │    │ • Users         │
-│ • Plaid Link    │    │ • Plaid APIs    │    │ • Accounts      │
-│ • Charts        │    │ • ML APIs       │    │ • Transactions  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │
-                       ┌─────────────────┐    ┌─────────────────┐
-                       │     Redis       │    │   Plaid API     │
-                       │   (Cache/Queue) │    │  (Bank Data)    │
-                       │                 │    │                 │
-                       │ • Session Store │    │ • Celery Tasks  │
-                       │ • ML Cache      │    │ • Institution   │
-                       └─────────────────┘    └─────────────────┘
-```
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -277,7 +256,7 @@ npm run test
 # Coming soon - Playwright/Cypress integration
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ### Production Deployment with Docker
 
@@ -310,40 +289,3 @@ npm run test
 - Connect GitHub repository
 - Configure build commands
 - Set environment variables
-
-## 🤝 Contributing
-
-1. **Fork the repository**
-2. **Create feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Commit changes** (`git commit -m 'Add amazing feature'`)
-4. **Push to branch** (`git push origin feature/amazing-feature`)
-5. **Open Pull Request**
-
-### Development Guidelines
-
-- Follow conventional commits
-- Write tests for new features
-- Update documentation
-- Follow code style guidelines (Black, ESLint)
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Plaid** for secure bank account integration
-- **FastAPI** for the excellent Python web framework
-- **React** team for the amazing frontend library
-- **Tailwind CSS** for the utility-first CSS framework
-
-## 📞 Support
-
-For support, please:
-1. Check the [documentation](docs/)
-2. Search [existing issues](issues)
-3. Create a [new issue](issues/new) if needed
-
----
-
-**Built with ❤️ for modern finance management** 
