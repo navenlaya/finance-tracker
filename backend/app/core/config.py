@@ -4,17 +4,17 @@ Manages environment variables and application settings.
 """
 
 from typing import List, Optional
-from pydantic import BaseSettings, validator
-from pydantic_settings import BaseSettings as PydanticBaseSettings
+from pydantic import validator
+from pydantic_settings import BaseSettings
 
 
-class Settings(PydanticBaseSettings):
+class Settings(BaseSettings):
     """Application settings with environment variable support."""
     
     # Application settings
     app_name: str = "Finance Tracker"
     app_version: str = "1.0.0"
-    debug: bool = False
+    debug: bool = True
     api_prefix: str = "/api/v1"
     
     # Database settings
@@ -53,7 +53,7 @@ class Settings(PydanticBaseSettings):
     plaid_client_id: Optional[str] = None
     plaid_secret: Optional[str] = None
     plaid_env: str = "sandbox"  # sandbox, development, or production
-    plaid_products: List[str] = ["transactions", "accounts", "identity"]
+    plaid_products: List[str] = ["transactions", "auth", "identity"]
     plaid_country_codes: List[str] = ["US"]
     
     # Redis settings for Celery

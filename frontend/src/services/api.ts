@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 // API base URL from environment variables
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';

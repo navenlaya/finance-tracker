@@ -26,7 +26,7 @@ from app.schemas.user import (
     UserResponse, 
     Token, 
     PasswordReset,
-    PasswordResetConfirm
+    PasswordResetConfirm,
 )
 
 router = APIRouter()
@@ -263,29 +263,41 @@ async def read_users_me(current_user: User = Depends(get_current_active_user)):
 
 
 @router.post("/refresh", response_model=Token)
-async def refresh_token(
-    current_user: User = Depends(get_current_active_user)
-):
+async def refresh_token(current_user: User = Depends(get_current_active_user)):
     """
     Refresh access token.
     
     Args:
-        current_user: Current authenticated user
+        current_user: Current authenticated user (validated by existing token)
     
     Returns:
-        New JWT token
+        New access token and user information
     """
-    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
-    access_token = create_access_token(
-        data={"sub": str(current_user.id)}, expires_delta=access_token_expires
-    )
-    
-    return Token(
-        access_token=access_token,
-        token_type="bearer",
-        expires_in=settings.access_token_expire_minutes * 60,
-        user=UserResponse.from_orm(current_user)
-    )
+    try:
+        # Generate new token
+        access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+        access_token = create_access_token(
+            data={"sub": str(current_user.id)}, expires_delta=access_token_expires
+        )
+        
+        # Update last login time
+        current_user.last_login = datetime.utcnow()
+        
+        user_response = UserResponse.from_orm(current_user)
+        user_response.has_plaid_connection = bool(current_user.plaid_access_token)
+        
+        return Token(
+            access_token=access_token,
+            token_type="bearer",
+            expires_in=int(access_token_expires.total_seconds()),
+            user=user_response
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Token refresh failed: {str(e)}"
+        )
 
 
 @router.post("/password-reset")

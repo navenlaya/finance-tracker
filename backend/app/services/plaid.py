@@ -47,11 +47,30 @@ class PlaidService:
     def _get_plaid_host(self):
         """Get Plaid host based on environment."""
         if settings.plaid_env == "sandbox":
-            return plaid.Environment.sandbox
+            return plaid.Environment.Sandbox
         elif settings.plaid_env == "development":
-            return plaid.Environment.development
+            return plaid.Environment.Development
         else:
-            return plaid.Environment.production
+            return plaid.Environment.Production
+    
+    def _serialize_plaid_data(self, data):
+        """Convert Plaid API objects to JSON-serializable dictionaries."""
+        if hasattr(data, 'to_dict'):
+            return data.to_dict()
+        elif isinstance(data, dict):
+            # Recursively serialize dictionary values
+            serialized = {}
+            for key, value in data.items():
+                if hasattr(value, 'to_dict'):
+                    serialized[key] = value.to_dict()
+                elif hasattr(value, '__dict__'):
+                    # Convert object to dict if it has attributes
+                    serialized[key] = {k: v for k, v in value.__dict__.items() if not k.startswith('_')}
+                else:
+                    serialized[key] = value
+            return serialized
+        else:
+            return data
     
     async def create_link_token(self, user_id: str, user_email: str) -> str:
         """
@@ -66,9 +85,9 @@ class PlaidService:
         """
         try:
             request = LinkTokenCreateRequest(
-                products=[getattr(Products, prod) for prod in settings.plaid_products],
+                products=[Products(prod) for prod in settings.plaid_products],
                 client_name="Finance Tracker",
-                country_codes=[getattr(CountryCode, code) for code in settings.plaid_country_codes],
+                country_codes=[CountryCode(code) for code in settings.plaid_country_codes],
                 language='en',
                 user=LinkTokenCreateRequestUser(client_user_id=user_id),
                 webhook='https://your-webhook-url.com/plaid/webhook'  # Replace with actual webhook URL
@@ -139,27 +158,48 @@ class PlaidService:
             List of transaction data
         """
         try:
-            request = TransactionsGetRequest(
-                access_token=access_token,
-                start_date=start_date,
-                end_date=end_date,
-                account_ids=account_ids
-            )
+            # Build request parameters
+            request_params = {
+                'access_token': access_token,
+                'start_date': start_date,
+                'end_date': end_date
+            }
+            
+            # Only add account_ids if provided
+            if account_ids is not None:
+                request_params['account_ids'] = account_ids
+            
+            request = TransactionsGetRequest(**request_params)
             
             response = self.client.transactions_get(request)
+            
+            # Handle response safely
+            if not response or 'transactions' not in response:
+                logger.warning("No transactions returned from Plaid API")
+                return []
+            
             transactions = response['transactions']
+            total_transactions = response.get('total_transactions', len(transactions))
+            
+            logger.info(f"Retrieved {len(transactions)} of {total_transactions} transactions")
             
             # Handle pagination if there are more transactions
-            total_transactions = response['total_transactions']
             while len(transactions) < total_transactions:
                 request.offset = len(transactions)
                 response = self.client.transactions_get(request)
-                transactions.extend(response['transactions'])
+                
+                if response and 'transactions' in response:
+                    transactions.extend(response['transactions'])
+                else:
+                    logger.warning("Failed to get additional transactions during pagination")
+                    break
             
+            logger.info(f"Total transactions retrieved: {len(transactions)}")
             return transactions
             
         except Exception as e:
             logger.error(f"Error getting transactions: {e}")
+            logger.error(f"Request params: access_token={'***' if access_token else None}, start_date={start_date}, end_date={end_date}, account_ids={account_ids}")
             raise Exception(f"Failed to get transactions: {str(e)}")
     
     async def sync_user_accounts(self, db: AsyncSession, user: User, access_token: str) -> List[Account]:
@@ -189,8 +229,8 @@ class PlaidService:
                 if existing_account:
                     # Update existing account
                     existing_account.account_name = plaid_account['name']
-                    existing_account.account_type = plaid_account['type']
-                    existing_account.account_subtype = plaid_account.get('subtype')
+                    existing_account.account_type = str(plaid_account['type'])
+                    existing_account.account_subtype = str(plaid_account.get('subtype')) if plaid_account.get('subtype') else None
                     existing_account.official_name = plaid_account.get('official_name')
                     existing_account.mask = plaid_account.get('mask')
                     
@@ -201,19 +241,49 @@ class PlaidService:
                     existing_account.credit_limit = Decimal(str(balances.get('limit', 0))) if balances.get('limit') else None
                     
                     existing_account.last_sync = datetime.utcnow()
-                    existing_account.plaid_metadata = plaid_account
+                    # Convert plaid_account to a serializable dict
+                    serializable_metadata = {
+                        'account_id': plaid_account['account_id'],
+                        'name': plaid_account['name'],
+                        'type': str(plaid_account['type']),
+                        'subtype': str(plaid_account.get('subtype')) if plaid_account.get('subtype') else None,
+                        'official_name': plaid_account.get('official_name'),
+                        'mask': plaid_account.get('mask'),
+                        'balances': {
+                            'current': balances.get('current'),
+                            'available': balances.get('available'),
+                            'limit': balances.get('limit'),
+                            'iso_currency_code': balances.get('iso_currency_code')
+                        }
+                    }
+                    existing_account.plaid_metadata = serializable_metadata
                     
                     synced_accounts.append(existing_account)
                     
                 else:
                     # Create new account
                     balances = plaid_account.get('balances', {})
+                    # Convert plaid_account to a serializable dict
+                    serializable_metadata = {
+                        'account_id': plaid_account['account_id'],
+                        'name': plaid_account['name'],
+                        'type': str(plaid_account['type']),
+                        'subtype': str(plaid_account.get('subtype')) if plaid_account.get('subtype') else None,
+                        'official_name': plaid_account.get('official_name'),
+                        'mask': plaid_account.get('mask'),
+                        'balances': {
+                            'current': balances.get('current'),
+                            'available': balances.get('available'),
+                            'limit': balances.get('limit'),
+                            'iso_currency_code': balances.get('iso_currency_code')
+                        }
+                    }
                     new_account = Account(
                         user_id=user.id,
                         plaid_account_id=plaid_account['account_id'],
                         account_name=plaid_account['name'],
-                        account_type=plaid_account['type'],
-                        account_subtype=plaid_account.get('subtype'),
+                        account_type=str(plaid_account['type']),
+                        account_subtype=str(plaid_account.get('subtype')) if plaid_account.get('subtype') else None,
                         official_name=plaid_account.get('official_name'),
                         current_balance=Decimal(str(balances.get('current', 0))),
                         available_balance=Decimal(str(balances.get('available', 0))),
@@ -221,7 +291,7 @@ class PlaidService:
                         mask=plaid_account.get('mask'),
                         currency_code=balances.get('iso_currency_code', 'USD'),
                         last_sync=datetime.utcnow(),
-                        plaid_metadata=plaid_account
+                        plaid_metadata=serializable_metadata
                     )
                     
                     db.add(new_account)
@@ -280,8 +350,8 @@ class PlaidService:
                     existing_transaction.category = plaid_transaction.get('category')
                     existing_transaction.category_id = plaid_transaction.get('category_id')
                     existing_transaction.pending = plaid_transaction.get('pending', False)
-                    existing_transaction.location = plaid_transaction.get('location')
-                    existing_transaction.plaid_metadata = plaid_transaction
+                    existing_transaction.location = None  # Skip location for now
+                    existing_transaction.plaid_metadata = None  # Skip metadata for now
                     
                     synced_transactions.append(existing_transaction)
                     
@@ -305,15 +375,14 @@ class PlaidService:
                             iso_currency_code=plaid_transaction.get('iso_currency_code', 'USD'),
                             name=plaid_transaction['name'],
                             merchant_name=plaid_transaction.get('merchant_name'),
-                            date=datetime.strptime(plaid_transaction['date'], '%Y-%m-%d').date(),
-                            authorized_date=datetime.strptime(plaid_transaction['authorized_date'], '%Y-%m-%d').date() 
-                                          if plaid_transaction.get('authorized_date') else None,
+                            date=plaid_transaction['date'] if isinstance(plaid_transaction.get('date'), date) else datetime.strptime(plaid_transaction['date'], '%Y-%m-%d').date() if plaid_transaction.get('date') else date.today(),
+                            authorized_date=plaid_transaction['authorized_date'] if isinstance(plaid_transaction.get('authorized_date'), date) else datetime.strptime(plaid_transaction['authorized_date'], '%Y-%m-%d').date() if plaid_transaction.get('authorized_date') else None,
                             category=plaid_transaction.get('category'),
                             category_id=plaid_transaction.get('category_id'),
                             transaction_type="debit" if plaid_transaction['amount'] > 0 else "credit",
                             pending=plaid_transaction.get('pending', False),
-                            location=plaid_transaction.get('location'),
-                            plaid_metadata=plaid_transaction
+                            location=None,  # Skip location for now to avoid serialization issues
+                            plaid_metadata=None  # Skip metadata for now to avoid serialization issues
                         )
                         
                         db.add(new_transaction)

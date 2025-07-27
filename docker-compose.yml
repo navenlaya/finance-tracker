@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
     networks:
       - finance-tracker-network
     healthcheck:
@@ -46,9 +46,9 @@ services:
       - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/finance_tracker
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=your-production-secret-key-change-this
-      - PLAID_CLIENT_ID=${PLAID_CLIENT_ID}
-      - PLAID_SECRET=${PLAID_SECRET}
-      - PLAID_ENV=${PLAID_ENV:-sandbox}
+      - PLAID_CLIENT_ID=685d42f5917ee80021fccfcf
+      - PLAID_SECRET=90c38e0d98b16c8fb856535a978cdd
+      - PLAID_ENV=sandbox
     ports:
       - "8000:8000"
     depends_on:
@@ -58,8 +58,8 @@ services:
         condition: service_healthy
     networks:
       - finance-tracker-network
-    volumes:
-      - ./backend:/app
+    # volumes:
+      # - ./backend:/app
     restart: unless-stopped
 
   # React Frontend
@@ -97,8 +97,8 @@ services:
         condition: service_healthy
     networks:
       - finance-tracker-network
-    volumes:
-      - ./backend:/app
+    # volumes:
+      # - ./backend:/app
     restart: unless-stopped
 
   # Celery Beat (for scheduled tasks)
@@ -119,8 +119,8 @@ services:
         condition: service_healthy
     networks:
       - finance-tracker-network
-    volumes:
-      - ./backend:/app
+    # volumes:
+      # - ./backend:/app
     restart: unless-stopped
 
 volumes:

@@ -54,27 +54,94 @@ async def get_transactions(
     return [TransactionResponse.from_orm(transaction) for transaction in transactions]
 
 
-@router.get("/dashboard", response_model=DashboardData)
+@router.get("/dashboard")
 async def get_dashboard_data(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get dashboard summary data."""
-    # This is a placeholder implementation
-    # In a real application, you would calculate actual statistics
+    from app.models.account import Account
+    from decimal import Decimal
+    import logging
     
-    return DashboardData(
-        total_balance=0,
-        monthly_income=0,
-        monthly_expenses=0,
-        monthly_savings=0,
-        account_summary=[],
-        recent_transactions=[],
-        spending_by_category=[],
-        budget_status=[],
-        spending_insights=[],
-        forecasts=[]
+    logger = logging.getLogger(__name__)
+    logger.info(f"Dashboard request for user_id: {current_user.id}")
+    
+    # Get all user accounts
+    account_result = await db.execute(
+        select(Account).where(Account.user_id == current_user.id)
     )
+    accounts = account_result.scalars().all()
+    
+    logger.info(f"Found {len(accounts)} accounts for user")
+    
+    # Calculate total balance and create account summary
+    total_balance = Decimal('0')
+    account_summary = []
+    
+    for account in accounts:
+        balance = account.current_balance or Decimal('0')
+        total_balance += balance
+        logger.info(f"Account {account.account_name}: balance={balance}")
+        account_summary.append({
+            "id": str(account.id),
+            "name": account.account_name,
+            "type": account.account_type,
+            "balance": str(balance),
+            "last_updated": account.last_sync.isoformat() if account.last_sync else None
+        })
+    
+    logger.info(f"Total balance calculated: {total_balance}")
+    
+    # Get recent transactions (last 10)
+    recent_transactions_result = await db.execute(
+        select(Transaction)
+        .where(Transaction.user_id == current_user.id)
+        .order_by(desc(Transaction.date))
+        .limit(10)
+    )
+    recent_transactions_data = recent_transactions_result.scalars().all()
+    
+    recent_transactions = []
+    for txn in recent_transactions_data:
+        recent_transactions.append({
+            "id": str(txn.id),
+            "description": txn.name,  # Transaction model uses 'name' field
+            "amount": str(txn.amount),
+            "date": txn.date.isoformat(),
+            "category": txn.custom_category or "Uncategorized"
+        })
+    
+    # Calculate monthly stats (simplified - last 30 days)
+    thirty_days_ago = datetime.now().date() - timedelta(days=30)
+    monthly_transactions = await db.execute(
+        select(Transaction)
+        .where(
+            and_(
+                Transaction.user_id == current_user.id,
+                Transaction.date >= thirty_days_ago
+            )
+        )
+    )
+    monthly_txns = monthly_transactions.scalars().all()
+    
+    monthly_income = sum(txn.amount for txn in monthly_txns if txn.amount > 0)
+    monthly_expenses = abs(sum(txn.amount for txn in monthly_txns if txn.amount < 0))
+    monthly_savings = monthly_income - monthly_expenses
+    
+    # Return plain dictionary with camelCase keys for frontend compatibility
+    return {
+        "totalBalance": float(total_balance),
+        "monthlyIncome": float(monthly_income),
+        "monthlyExpenses": float(monthly_expenses),
+        "monthlySavings": float(monthly_savings),
+        "accountSummary": account_summary,
+        "recentTransactions": recent_transactions,
+        "spendingByCategory": [],  # TODO: Implement category breakdown
+        "budgetStatus": [],  # TODO: Implement budget tracking
+        "spendingInsights": [],  # TODO: Implement insights
+        "forecasts": []  # TODO: Implement forecasting
+    }
 
 
 @router.post("/", response_model=TransactionResponse)

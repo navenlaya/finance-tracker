@@ -197,4 +197,9 @@ class DashboardData(BaseModel):
     spending_by_category: List[Dict[str, Any]]
     budget_status: List[BudgetResponse]
     spending_insights: List[SpendingInsight]
-    forecasts: List[ForecastData] 
+    forecasts: List[ForecastData]
+
+    class Config:
+        # Convert snake_case to camelCase for JSON output
+        alias_generator = lambda field_name: ''.join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split('_')))
+        allow_population_by_field_name = True 

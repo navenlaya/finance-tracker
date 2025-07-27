@@ -28,10 +28,10 @@ redis==5.0.1
 # Environment and configuration
 python-dotenv==1.0.0
 pydantic-settings==2.1.0
+email-validator==2.1.0
 
 # CORS and security
-python-cors==1.0.0
-cryptography==41.0.8
+cryptography==42.0.8
 
 # HTTP client for external APIs
 httpx==0.25.2

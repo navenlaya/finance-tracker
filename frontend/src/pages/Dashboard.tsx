@@ -13,6 +13,7 @@ import {
 import { transactionsApi, plaidApi } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { PlaidLink } from '../components/PlaidLink';
 
 export const Dashboard: React.FC = () => {
   // Fetch dashboard data
@@ -73,9 +74,7 @@ export const Dashboard: React.FC = () => {
                 Link your bank account to automatically sync transactions and get AI-powered insights.
               </p>
             </div>
-            <Button variant="outline" size="sm" className="ml-4">
-              Connect Now
-            </Button>
+            <PlaidLink variant="outline" size="sm" className="ml-4" />
           </div>
         </div>
       )}
