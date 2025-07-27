@@ -1,0 +1,188 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Backend specific
+backend/.env
+backend/.env.*
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+backend/.Python
+backend/venv/
+backend/env/
+backend/.venv/
+backend/pip-log.txt
+backend/pip-delete-this-directory.txt
+backend/.pytest_cache/
+backend/htmlcov/
+backend/.coverage
+backend/.mypy_cache/
+backend/instance/
+backend/.webassets-cache
+
+# Frontend specific
+frontend/.env
+frontend/.env.*
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/out/
+frontend/.nuxt/
+frontend/.cache/
+frontend/.parcel-cache/
+frontend/.DS_Store
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnpm-debug.log*
+
+# Package lock files (keep only one type)
+package-lock.json
+yarn.lock
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+postgres_data/
+pgdata/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.sublime-project
+.sublime-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env.test
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor backup files
+*~
+*.bak
+*.backup
+
+# Compiled Python files
+*.pyc
+__pycache__/
+
+# Alembic
+alembic/versions/*.py
+!alembic/versions/.gitkeep
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/ 
