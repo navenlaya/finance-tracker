@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: finance-tracker-db
+    environment:
+      POSTGRES_DB: finance_tracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - finance-tracker-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis for Celery
+  redis:
+    image: redis:7-alpine
+    container_name: finance-tracker-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - finance-tracker-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: finance-tracker-backend
+    environment:
+      - DEBUG=False
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/finance_tracker
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-production-secret-key-change-this
+      - PLAID_CLIENT_ID=${PLAID_CLIENT_ID}
+      - PLAID_SECRET=${PLAID_SECRET}
+      - PLAID_ENV=${PLAID_ENV:-sandbox}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - finance-tracker-network
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: finance-tracker-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - finance-tracker-network
+    restart: unless-stopped
+
+  # Celery Worker (for background tasks)
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: finance-tracker-celery
+    command: celery -A app.tasks.celery_app worker --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/finance_tracker
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-production-secret-key-change-this
+      - PLAID_CLIENT_ID=${PLAID_CLIENT_ID}
+      - PLAID_SECRET=${PLAID_SECRET}
+      - PLAID_ENV=${PLAID_ENV:-sandbox}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - finance-tracker-network
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+
+  # Celery Beat (for scheduled tasks)
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: finance-tracker-celery-beat
+    command: celery -A app.tasks.celery_app beat --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/finance_tracker
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-production-secret-key-change-this
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - finance-tracker-network
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  finance-tracker-network:
+    driver: bridge 

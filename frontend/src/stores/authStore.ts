@@ -1,0 +1,110 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { authApi } from '../services/api';
+
+interface User {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  hasPlaidConnection: boolean;
+}
+
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (userData: RegisterData) => Promise<void>;
+  logout: () => void;
+  setLoading: (loading: boolean) => void;
+  refreshToken: () => Promise<void>;
+}
+
+interface RegisterData {
+  email: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      isLoading: false,
+
+      login: async (email: string, password: string) => {
+        try {
+          set({ isLoading: true });
+          const response = await authApi.login({ email, password });
+          
+          set({
+            user: response.user,
+            token: response.access_token,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      register: async (userData: RegisterData) => {
+        try {
+          set({ isLoading: true });
+          const response = await authApi.register(userData);
+          
+          set({
+            user: response.user,
+            token: response.access_token,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      logout: () => {
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isLoading: false,
+        });
+      },
+
+      setLoading: (loading: boolean) => {
+        set({ isLoading: loading });
+      },
+
+      refreshToken: async () => {
+        try {
+          const response = await authApi.refreshToken();
+          set({
+            token: response.access_token,
+            user: response.user,
+          });
+        } catch (error) {
+          // If refresh fails, logout the user
+          get().logout();
+          throw error;
+        }
+      },
+    }),
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({
+        token: state.token,
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    }
+  )
+); 
