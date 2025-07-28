@@ -30,11 +30,6 @@ A modern, full-stack finance tracking application with AI-powered insights and r
 - **Budget Management**: Set and track spending goals
 - **Custom Reports**: Export financial reports in multiple formats
 - **Calendar View**: Daily and weekly spending visualization
-
-## Architecture
-
-### Technology Stack
-
 #### Frontend
 - **Framework**: React 18 with TypeScript
 - **Build Tool**: Vite
@@ -237,7 +232,7 @@ VITE_PLAID_ENV=sandbox
 
 Full API documentation available at: http://localhost:8000/docs
 
-## 🧪 Testing
+## Testing
 
 ### Backend Tests
 ```bash
