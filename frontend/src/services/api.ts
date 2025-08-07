@@ -76,6 +76,7 @@ interface Transaction {
   merchantName?: string;
   transactionType: string;
   pending: boolean;
+  accountId: string;
 }
 
 interface PlaidConnection {
@@ -87,6 +88,24 @@ interface PlaidConnection {
   accounts_count?: number;
   lastSync?: string;
   last_sync?: string;
+}
+
+interface Budget {
+  id: string;
+  name: string;
+  category: string;
+  budgetLimit: number;
+  periodType: string;
+  startDate: string;
+  endDate: string;
+  alertThreshold: number;
+  autoRollover: boolean;
+  spentAmount: number;
+  remainingAmount: number;
+  utilizationPercentage: number;
+  isOverBudget: boolean;
+  shouldAlert: boolean;
+  isActive: boolean;
 }
 
 // Auth API
@@ -227,6 +246,48 @@ export const transactionsApi = {
   }): Promise<Transaction> => {
     const response = await apiClient.put(`/transactions/${transactionId}`, updates);
     return response.data;
+  },
+};
+
+// Budgets API
+export const budgetsApi = {
+  getBudgets: async (): Promise<Budget[]> => {
+    const response = await apiClient.get('/budgets');
+    return response.data;
+  },
+
+  createBudget: async (budgetData: {
+    name: string;
+    category: string;
+    budgetLimit: number;
+    periodType: string;
+    startDate: string;
+    endDate: string;
+    alertThreshold: number;
+    autoRollover: boolean;
+  }): Promise<Budget> => {
+    const response = await apiClient.post('/budgets', budgetData);
+    return response.data;
+  },
+
+  updateBudget: async (budgetData: {
+    id: string;
+    name?: string;
+    category?: string;
+    budgetLimit?: number;
+    periodType?: string;
+    startDate?: string;
+    endDate?: string;
+    alertThreshold?: number;
+    autoRollover?: boolean;
+  }): Promise<Budget> => {
+    const { id, ...data } = budgetData;
+    const response = await apiClient.put(`/budgets/${id}`, data);
+    return response.data;
+  },
+
+  deleteBudget: async (budgetId: string): Promise<void> => {
+    await apiClient.delete(`/budgets/${budgetId}`);
   },
 };
 
