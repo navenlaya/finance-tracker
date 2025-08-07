@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useAuthStore } from './stores/authStore';
 import { Dashboard } from './pages/Dashboard';
 import { Login } from './pages/Login';
@@ -7,9 +8,17 @@ import { Layout } from './components/Layout';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 
 function App() {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading, isInitialized, initializeAuth } = useAuthStore();
 
-  if (isLoading) {
+  // Initialize auth on app startup
+  useEffect(() => {
+    if (!isInitialized) {
+      initializeAuth();
+    }
+  }, [isInitialized, initializeAuth]);
+
+  // Show loading while initializing auth
+  if (!isInitialized || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />

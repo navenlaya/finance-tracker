@@ -32,9 +32,9 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Token expired, redirect to login
+      // Token expired, clear auth state but don't redirect
+      // The App component will handle the redirect based on auth state
       localStorage.removeItem('auth-storage');
-      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
@@ -54,13 +54,7 @@ interface LoginResponse {
   };
 }
 
-interface User {
-  id: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  hasPlaidConnection: boolean;
-}
+
 
 interface Account {
   id: string;
@@ -124,7 +118,13 @@ export const authApi = {
     return response.data;
   },
 
-  getCurrentUser: async (): Promise<User> => {
+  getCurrentUser: async (): Promise<{
+    id: string;
+    email: string;
+    first_name?: string;
+    last_name?: string;
+    has_plaid_connection: boolean;
+  }> => {
     const response = await apiClient.get('/auth/me');
     return response.data;
   },

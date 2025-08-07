@@ -109,18 +109,21 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Sync Transactions Alert for Connected Users - Only show if no recent transactions */}
+      {/* Sync Transactions Alert for Connected Users - Only show if connected, has accounts, but no recent transactions */}
       {(() => {
         console.log('=== SYNC BUTTON SECTION IS BEING EVALUATED ===');
         const isConnected = plaidStatus?.isConnected || plaidStatus?.is_connected;
+        const hasAccounts = plaidStatus?.accountsCount && plaidStatus.accountsCount > 0;
         const hasTransactions = dashboardData?.recentTransactions && dashboardData.recentTransactions.length > 0;
-        const shouldShowSyncButton = isConnected && !hasTransactions;
+        const shouldShowSyncButton = isConnected && hasAccounts && !hasTransactions;
         console.log('Sync Button Debug:', {
           plaidStatus,
           isConnectedField: plaidStatus?.isConnected,
           is_connectedField: plaidStatus?.is_connected,
+          accountsCount: plaidStatus?.accountsCount,
           recentTransactionsLength: dashboardData?.recentTransactions?.length,
           isConnected,
+          hasAccounts,
           hasTransactions,
           shouldShowSyncButton
         });

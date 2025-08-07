@@ -15,11 +15,13 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitialized: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (userData: RegisterData) => Promise<void>;
   logout: () => void;
   setLoading: (loading: boolean) => void;
   refreshToken: () => Promise<void>;
+  initializeAuth: () => Promise<void>;
 }
 
 interface RegisterData {
@@ -36,6 +38,46 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
       isLoading: false,
+      isInitialized: false,
+
+      initializeAuth: async () => {
+        const state = get();
+        if (!state.token) {
+          set({ isInitialized: true });
+          return;
+        }
+
+        try {
+          set({ isLoading: true });
+          // Try to get current user to validate token
+          const response = await authApi.getCurrentUser();
+          
+          // Map backend response to frontend format
+          const mappedUser: User = {
+            id: response.id,
+            email: response.email,
+            firstName: response.first_name,
+            lastName: response.last_name,
+            hasPlaidConnection: response.has_plaid_connection,
+          };
+          
+          set({
+            user: mappedUser,
+            isAuthenticated: true,
+            isLoading: false,
+            isInitialized: true,
+          });
+        } catch (error) {
+          // Token is invalid, clear auth state
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+            isInitialized: true,
+          });
+        }
+      },
 
       login: async (email: string, password: string) => {
         try {
