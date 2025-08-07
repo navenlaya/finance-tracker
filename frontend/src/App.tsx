@@ -2,6 +2,11 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuthStore } from './stores/authStore';
 import { Dashboard } from './pages/Dashboard';
+import { Accounts } from './pages/Accounts';
+import { Transactions } from './pages/Transactions';
+import { Budgets } from './pages/Budgets';
+import { Insights } from './pages/Insights';
+import { Settings } from './pages/Settings';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Layout } from './components/Layout';
@@ -47,6 +52,11 @@ function App() {
               <Layout>
                 <Routes>
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/accounts" element={<Accounts />} />
+                  <Route path="/transactions" element={<Transactions />} />
+                  <Route path="/budgets" element={<Budgets />} />
+                  <Route path="/insights" element={<Insights />} />
+                  <Route path="/settings" element={<Settings />} />
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </Layout>
