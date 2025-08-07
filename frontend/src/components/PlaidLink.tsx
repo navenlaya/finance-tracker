@@ -44,12 +44,22 @@ export const PlaidLink: React.FC<PlaidLinkProps> = ({
         institution_name: metadata.institution.name,
       });
 
+      // Sync transactions after connecting
+      try {
+        console.log('Syncing transactions...');
+        const syncResult = await plaidApi.syncTransactions(30); // Sync last 30 days
+        console.log('Transactions synced:', syncResult);
+      } catch (syncError) {
+        console.error('Error syncing transactions:', syncError);
+        // Don't fail the connection if transaction sync fails
+      }
+
       // Refresh plaid status and dashboard data
       queryClient.invalidateQueries('plaid-status');
       queryClient.invalidateQueries('dashboard');
       
       setIsConnecting(false);
-      alert('Bank account connected successfully!');
+      alert('Bank account connected successfully! Transactions are being synced.');
     } catch (error) {
       console.error('Error exchanging token:', error);
       alert('Failed to connect bank account. Please try again.');

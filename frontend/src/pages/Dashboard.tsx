@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { 
   DollarSign, 
   TrendingUp, 
@@ -16,6 +16,8 @@ import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { PlaidLink } from '../components/PlaidLink';
 
 export const Dashboard: React.FC = () => {
+  const queryClient = useQueryClient();
+  
   // Fetch dashboard data
   const { data: dashboardData, isLoading: isDashboardLoading } = useQuery(
     'dashboard',
@@ -23,10 +25,29 @@ export const Dashboard: React.FC = () => {
   );
 
   // Fetch Plaid connection status
-  const { data: plaidStatus } = useQuery(
+  const { data: plaidStatus, isLoading: isPlaidLoading, error: plaidError } = useQuery(
     'plaid-status',
-    plaidApi.getConnectionStatus
+    plaidApi.getConnectionStatus,
+    {
+      refetchOnWindowFocus: true,
+      retry: 3,
+      refetchInterval: 5000, // Refetch every 5 seconds
+    }
   );
+
+  // Debug logging
+  console.log('Dashboard Debug:', {
+    plaidStatus,
+    plaidLoading: isPlaidLoading,
+    plaidError,
+    dashboardData,
+    isConnected: plaidStatus?.isConnected,
+    is_connected: plaidStatus?.is_connected,
+    recentTransactions: dashboardData?.recentTransactions,
+    recentTransactionsLength: dashboardData?.recentTransactions?.length,
+    shouldShowConnectionAlert: !(plaidStatus?.isConnected || plaidStatus?.is_connected),
+    shouldShowSyncButton: (plaidStatus?.isConnected || plaidStatus?.is_connected)
+  });
 
   if (isDashboardLoading) {
     return (
@@ -62,7 +83,16 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Plaid Connection Alert */}
-      {!plaidStatus?.isConnected && (
+      {(() => {
+        const shouldShowConnectionAlert = !(plaidStatus?.isConnected || plaidStatus?.is_connected);
+        console.log('Connection Alert Debug:', {
+          plaidStatus,
+          isConnected: plaidStatus?.isConnected,
+          is_connected: plaidStatus?.is_connected,
+          shouldShowConnectionAlert
+        });
+        return shouldShowConnectionAlert;
+      })() && (
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
           <div className="flex items-center">
             <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mr-3" />
@@ -75,6 +105,60 @@ export const Dashboard: React.FC = () => {
               </p>
             </div>
             <PlaidLink variant="outline" size="sm" className="ml-4" />
+          </div>
+        </div>
+      )}
+
+      {/* Sync Transactions Alert for Connected Users - Only show if no recent transactions */}
+      {(() => {
+        console.log('=== SYNC BUTTON SECTION IS BEING EVALUATED ===');
+        const isConnected = plaidStatus?.isConnected || plaidStatus?.is_connected;
+        const hasTransactions = dashboardData?.recentTransactions && dashboardData.recentTransactions.length > 0;
+        const shouldShowSyncButton = isConnected && !hasTransactions;
+        console.log('Sync Button Debug:', {
+          plaidStatus,
+          isConnectedField: plaidStatus?.isConnected,
+          is_connectedField: plaidStatus?.is_connected,
+          recentTransactionsLength: dashboardData?.recentTransactions?.length,
+          isConnected,
+          hasTransactions,
+          shouldShowSyncButton
+        });
+        return shouldShowSyncButton;
+      })() && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="flex items-center">
+            <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-3" />
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                Sync Your Transactions
+              </h3>
+              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                Your bank account is connected but transactions need to be synced. Click below to fetch your recent transactions.
+              </p>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-4"
+              onClick={async () => {
+                try {
+                  console.log('Starting transaction sync...');
+                  const result = await plaidApi.syncTransactions(30);
+                  console.log('Sync result:', result);
+                  alert(`Successfully synced ${result.transactions_synced} transactions!`);
+                  // Refresh dashboard data and plaid status
+                  queryClient.invalidateQueries('dashboard');
+                  queryClient.invalidateQueries('plaid-status');
+                } catch (error) {
+                  console.error('Error syncing transactions:', error);
+                  alert('Failed to sync transactions. Please try again.');
+                }
+              }}
+            >
+              <Zap className="h-4 w-4 mr-2" />
+              Sync Now
+            </Button>
           </div>
         </div>
       )}

@@ -48,9 +48,9 @@ interface LoginResponse {
   user: {
     id: string;
     email: string;
-    firstName?: string;
-    lastName?: string;
-    hasPlaidConnection: boolean;
+    first_name?: string;
+    last_name?: string;
+    has_plaid_connection: boolean;
   };
 }
 
@@ -85,10 +85,14 @@ interface Transaction {
 }
 
 interface PlaidConnection {
-  isConnected: boolean;
+  isConnected?: boolean;
+  is_connected?: boolean;
   institutionName?: string;
-  accountsCount: number;
+  institution_name?: string;
+  accountsCount?: number;
+  accounts_count?: number;
   lastSync?: string;
+  last_sync?: string;
 }
 
 // Auth API
@@ -104,7 +108,14 @@ export const authApi = {
     firstName?: string;
     lastName?: string;
   }): Promise<LoginResponse> => {
-    const response = await apiClient.post('/auth/register', userData);
+    // Convert camelCase to snake_case for backend
+    const backendData = {
+      email: userData.email,
+      password: userData.password,
+      first_name: userData.firstName,
+      last_name: userData.lastName,
+    };
+    const response = await apiClient.post('/auth/register', backendData);
     return response.data;
   },
 

@@ -12,7 +12,7 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null; then
+if ! docker compose version &> /dev/null; then
     echo "❌ Docker Compose is not installed. Please install Docker Compose first."
     echo "Visit: https://docs.docker.com/compose/install/"
     exit 1
@@ -76,14 +76,14 @@ echo "🚀 Building and starting the application..."
 echo "This may take a few minutes for the first build..."
 echo ""
 
-docker-compose up --build -d
+docker compose up --build -d
 
 # Wait for services to be ready
 echo "⏳ Waiting for services to start..."
 sleep 30
 
 # Check if services are running
-if docker-compose ps | grep -q "Up"; then
+if docker compose ps | grep -q "Up"; then
     echo ""
     echo "🎉 Setup completed successfully!"
     echo ""
@@ -93,9 +93,9 @@ if docker-compose ps | grep -q "Up"; then
     echo "   API Documentation: http://localhost:8000/docs"
     echo ""
     echo "🔧 Management Commands:"
-    echo "   View logs: docker-compose logs -f"
-    echo "   Stop app: docker-compose down"
-    echo "   Restart: docker-compose restart"
+    echo "   View logs: docker compose logs -f"
+    echo "   Stop app: docker compose down"
+    echo "   Restart: docker compose restart"
     echo ""
     echo "📖 Next Steps:"
     echo "   1. Visit http://localhost:3000 to access the application"
@@ -104,6 +104,6 @@ if docker-compose ps | grep -q "Up"; then
     echo "   4. Start tracking your finances!"
     echo ""
 else
-    echo "❌ Some services failed to start. Check logs with: docker-compose logs"
+    echo "❌ Some services failed to start. Check logs with: docker compose logs"
     exit 1
 fi 

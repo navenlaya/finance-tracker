@@ -42,8 +42,17 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: true });
           const response = await authApi.login({ email, password });
           
+          // Map backend response to frontend format
+          const user: User = {
+            id: response.user.id,
+            email: response.user.email,
+            firstName: response.user.first_name,
+            lastName: response.user.last_name,
+            hasPlaidConnection: response.user.has_plaid_connection,
+          };
+          
           set({
-            user: response.user,
+            user: user,
             token: response.access_token,
             isAuthenticated: true,
             isLoading: false,
@@ -59,8 +68,17 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: true });
           const response = await authApi.register(userData);
           
+          // Map backend response to frontend format
+          const user: User = {
+            id: response.user.id,
+            email: response.user.email,
+            firstName: response.user.first_name,
+            lastName: response.user.last_name,
+            hasPlaidConnection: response.user.has_plaid_connection,
+          };
+          
           set({
-            user: response.user,
+            user: user,
             token: response.access_token,
             isAuthenticated: true,
             isLoading: false,
@@ -87,9 +105,19 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: async () => {
         try {
           const response = await authApi.refreshToken();
+          
+          // Map backend response to frontend format
+          const user: User = {
+            id: response.user.id,
+            email: response.user.email,
+            firstName: response.user.first_name,
+            lastName: response.user.last_name,
+            hasPlaidConnection: response.user.has_plaid_connection,
+          };
+          
           set({
             token: response.access_token,
-            user: response.user,
+            user: user,
           });
         } catch (error) {
           // If refresh fails, logout the user

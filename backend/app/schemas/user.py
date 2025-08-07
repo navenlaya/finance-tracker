@@ -100,7 +100,7 @@ class PasswordResetConfirm(BaseModel):
 
 class PlaidConnection(BaseModel):
     """Schema for Plaid connection status."""
-    is_connected: bool
-    institution_name: Optional[str] = None
-    accounts_count: int = 0
-    last_sync: Optional[datetime] = None 
+    isConnected: bool
+    institutionName: Optional[str] = None
+    accountsCount: int = 0
+    lastSync: Optional[datetime] = None 

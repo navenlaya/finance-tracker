@@ -132,6 +132,12 @@ async def get_connection_status(
         Plaid connection status information
     """
     try:
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        logger.info(f"Connection status request for user_id: {current_user.id}")
+        logger.info(f"User has plaid_access_token: {bool(current_user.plaid_access_token)}")
+        
         is_connected = bool(current_user.plaid_access_token)
         
         if is_connected:
@@ -145,24 +151,30 @@ async def get_connection_status(
             )
             accounts_count = result.scalar() or 0
             
+            logger.info(f"Found {accounts_count} accounts for user")
+            
             # Get most recent sync time
             sync_result = await db.execute(
                 select(func.max(Account.last_sync)).where(Account.user_id == current_user.id)
             )
             last_sync = sync_result.scalar()
             
+            logger.info(f"Connection status returning: is_connected=True, accounts_count={accounts_count}")
+            
             return PlaidConnection(
-                is_connected=True,
-                accounts_count=accounts_count,
-                last_sync=last_sync
+                isConnected=True,
+                accountsCount=accounts_count,
+                lastSync=last_sync
             )
         else:
+            logger.info(f"Connection status returning: is_connected=False")
             return PlaidConnection(
-                is_connected=False,
-                accounts_count=0
+                isConnected=False,
+                accountsCount=0
             )
             
     except Exception as e:
+        logger.error(f"Error in connection status: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get connection status: {str(e)}"
