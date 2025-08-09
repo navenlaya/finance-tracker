@@ -363,7 +363,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- Email: support@financetracker.dev
 - Issues: [GitHub Issues](https://github.com/navenlaya/finance-tracker/issues)
 - Discussions: [GitHub Discussions](https://github.com/navenlaya/finance-tracker/discussions)
 
@@ -376,4 +375,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with care by the Finance Tracker Team**
+**Built with care by Naven Laya**
