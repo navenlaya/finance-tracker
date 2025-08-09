@@ -1,4 +1,4 @@
-# 💰 Finance Tracker
+# Finance Tracker
 
 A comprehensive, full-stack personal finance management application with real bank account integration via Plaid API. Built with modern technologies and designed with professional-grade architecture.
 
@@ -9,40 +9,40 @@ A comprehensive, full-stack personal finance management application with real ba
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED)
 
-## ✨ Features
+## Features
 
-### 🔐 Authentication & Security
+### Authentication & Security
 - **Secure JWT Authentication** with bcrypt password hashing
 - **Auto token validation** and session management
 - **Password reset** functionality with secure token generation
 - **Protected routes** with automatic redirect handling
 
-### 🏦 Banking Integration
+### Banking Integration
 - **Real bank account connection** via Plaid API
 - **Automatic transaction syncing** from multiple financial institutions
 - **Account balance tracking** across checking, savings, and credit accounts
 - **Bank-level security** with encrypted token storage
 
-### 📊 Financial Management
+### Financial Management
 - **Dashboard Overview** with real-time financial metrics
 - **Transaction Management** with advanced filtering and search
 - **Budget Creation & Tracking** with progress visualization
 - **Account Management** with sync status and connection monitoring
 
-### 🧠 Analytics & Insights
+### Analytics & Insights
 - **AI-Powered Insights** with spending pattern analysis
 - **Spending Forecasts** using machine learning algorithms
 - **Category-based Analytics** with visual breakdowns
 - **Financial Health Scoring** and recommendations
 
-### ⚙️ User Experience
+### User Experience
 - **Modern Responsive UI** with Tailwind CSS
 - **Dark/Light Mode** support (planned)
 - **Real-time Notifications** with toast messages
 - **Loading States** and error handling
 - **Mobile-first Design** for all screen sizes
 
-## 🏗️ Architecture
+## Architecture
 
 ### Frontend Stack
 - **Framework**: React 18 with TypeScript
@@ -73,7 +73,7 @@ A comprehensive, full-stack personal finance management application with real ba
 - **Process Management**: Uvicorn/Gunicorn for production deployment
 - **Background Tasks**: Celery Beat for scheduled operations
 
-## 🚀 Quick Start
+## Quick Start
 
 ### One-Click Setup (Recommended)
 
@@ -87,12 +87,12 @@ chmod +x scripts/setup.sh
 ```
 
 The script will:
-- ✅ Check Docker installation
-- 🔧 Set up environment files
-- 🔐 Configure Plaid credentials (optional)
-- 🔑 Generate secure secret keys
-- 🚀 Build and start all services
-- 📍 Provide access URLs and next steps
+- Check Docker installation
+- Set up environment files
+- Configure Plaid credentials (optional)
+- Generate secure secret keys
+- Build and start all services
+- Provide access URLs and next steps
 
 ### Manual Docker Setup
 
@@ -115,49 +115,49 @@ The script will:
    ```
 
 4. **Access application**
-   - 🌐 Frontend: http://localhost:3000
-   - 🔌 Backend API: http://localhost:8000
-   - 📚 API Docs: http://localhost:8000/docs
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - API Docs: http://localhost:8000/docs
 
-## 📱 Application Pages
+## Application Pages
 
-### 🏠 Dashboard
+### Dashboard
 - Real-time financial overview
 - Balance tracking across all accounts
 - Recent transactions display
 - Quick action buttons for common tasks
 
-### 🏦 Accounts
+### Accounts
 - Connected bank accounts management
 - Account balance and status monitoring
 - Bank connection and sync functionality
 - Add new accounts via Plaid Link
 
-### 💳 Transactions
+### Transactions
 - Comprehensive transaction history
 - Advanced filtering (date, category, account, amount)
 - Search functionality across transaction details
 - Transaction categorization and editing
 
-### 💰 Budgets
+### Budgets
 - Budget creation with flexible periods (monthly, weekly, yearly)
 - Progress tracking with visual indicators
 - Spending alerts and notifications
 - Budget performance analytics
 
-### 📈 Insights
+### Insights
 - AI-powered spending analysis
 - Category-wise expense breakdown
 - Spending trends and forecasts
 - Personalized financial recommendations
 
-### ⚙️ Settings
+### Settings
 - User profile management
 - Security settings and password changes
 - Notification preferences
 - Account integrations and connections
 
-## 🛠️ Development Setup
+## Development Setup
 
 ### Prerequisites
 - Docker & Docker Compose
@@ -187,7 +187,7 @@ cp .env.example .env
 npm run dev
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -238,7 +238,7 @@ VITE_PLAID_ENV=sandbox
    - Use test credentials: `user_good` / `pass_good`
    - Test various account scenarios with Plaid's test data
 
-## 📚 API Documentation
+## API Documentation
 
 ### Authentication Endpoints
 - `POST /api/v1/auth/register` - User registration
@@ -274,9 +274,9 @@ VITE_PLAID_ENV=sandbox
 - `GET /api/v1/ml/insights` - Get AI-powered insights
 - `POST /api/v1/ml/retrain` - Trigger model retraining
 
-**📖 Complete API documentation**: http://localhost:8000/docs
+**Complete API documentation**: http://localhost:8000/docs
 
-## 🧪 Testing
+## Testing
 
 ### Backend Testing
 ```bash
@@ -298,7 +298,7 @@ npm run test:coverage
 npm run test:e2e
 ```
 
-## 🚢 Deployment
+## Deployment
 
 ### Production Docker Deployment
 
@@ -317,7 +317,7 @@ npm run test:e2e
 
 ### Cloud Deployment Options
 
-#### 🟡 Heroku
+#### Heroku
 ```bash
 # Add Heroku Postgres addon
 heroku addons:create heroku-postgresql:hobby-dev
@@ -327,23 +327,23 @@ heroku config:set SECRET_KEY=your-secret-key
 git push heroku main
 ```
 
-#### 🟠 AWS ECS/Fargate
+#### AWS ECS/Fargate
 - Use provided Dockerfiles for containerization
 - Set up RDS PostgreSQL for database
 - Configure Application Load Balancer
 - Use ECR for container registry
 
-#### 🔵 Google Cloud Run
+#### Google Cloud Run
 - Deploy containerized services individually
 - Use Cloud SQL for PostgreSQL
 - Set up Cloud Build for CI/CD pipeline
 
-#### 🟢 DigitalOcean App Platform
+#### DigitalOcean App Platform
 - Connect GitHub repository
 - Configure build commands and environment variables
 - Automatic deployment on git push
 
-## 🤝 Contributing
+## Contributing
 
 1. **Fork the repository**
 2. **Create feature branch** (`git checkout -b feature/amazing-feature`)
@@ -357,17 +357,17 @@ git push heroku main
 - Update documentation for API changes
 - Follow conventional commit messages
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Support
+## Support
 
-- 📧 Email: support@financetracker.dev
-- 🐛 Issues: [GitHub Issues](https://github.com/navenlaya/finance-tracker/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/navenlaya/finance-tracker/discussions)
+- Email: support@financetracker.dev
+- Issues: [GitHub Issues](https://github.com/navenlaya/finance-tracker/issues)
+- Discussions: [GitHub Discussions](https://github.com/navenlaya/finance-tracker/discussions)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Plaid](https://plaid.com/) for banking data integration
 - [FastAPI](https://fastapi.tiangolo.com/) for the amazing Python framework
@@ -376,4 +376,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ by the Finance Tracker Team**
+**Built with care by the Finance Tracker Team**
