@@ -58,12 +58,13 @@ interface LoginResponse {
 
 interface Account {
   id: string;
-  accountName: string;
-  accountType: string;
-  currentBalance?: number;
-  availableBalance?: number;
-  institutionName?: string;
+  account_name: string;
+  account_type: string;
+  current_balance?: number;
+  available_balance?: number;
+  institution_name?: string;
   mask?: string;
+  last_sync?: string;
 }
 
 interface Transaction {
@@ -80,13 +81,9 @@ interface Transaction {
 }
 
 interface PlaidConnection {
-  isConnected?: boolean;
   is_connected?: boolean;
-  institutionName?: string;
   institution_name?: string;
-  accountsCount?: number;
   accounts_count?: number;
-  lastSync?: string;
   last_sync?: string;
 }
 
