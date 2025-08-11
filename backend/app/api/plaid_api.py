@@ -162,15 +162,15 @@ async def get_connection_status(
             logger.info(f"Connection status returning: is_connected=True, accounts_count={accounts_count}")
             
             return PlaidConnection(
-                isConnected=True,
-                accountsCount=accounts_count,
-                lastSync=last_sync
+                is_connected=True,
+                accounts_count=accounts_count,
+                last_sync=last_sync
             )
         else:
             logger.info(f"Connection status returning: is_connected=False")
             return PlaidConnection(
-                isConnected=False,
-                accountsCount=0
+                is_connected=False,
+                accounts_count=0
             )
             
     except Exception as e:
