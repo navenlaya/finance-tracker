@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     
     # CORS settings
-    backend_cors_origins: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    backend_cors_origins: List[str] = ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"]
     
     @validator("backend_cors_origins", pre=True)
     def assemble_cors_origins(cls, v: str | List[str]) -> List[str]:
