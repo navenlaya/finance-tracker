@@ -14,6 +14,19 @@ import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { PlaidLink } from '../components/PlaidLink';
 
 export const Accounts: React.FC = () => {
+  // Helper function to format account type
+  const formatAccountType = (type: string) => {
+    const typeMap: Record<string, string> = {
+      'checking': 'Checking',
+      'savings': 'Savings',
+      'credit': 'Credit Card',
+      'depository': 'Deposit Account',
+      'loan': 'Loan',
+      'investment': 'Investment'
+    };
+    return typeMap[type.toLowerCase()] || type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
   // Fetch accounts data
   const { data: accounts, isLoading: isAccountsLoading, refetch: refetchAccounts } = useQuery(
     'accounts',
@@ -34,7 +47,7 @@ export const Accounts: React.FC = () => {
     }
   );
 
-  const isConnected = plaidStatus?.isConnected || plaidStatus?.is_connected;
+  const isConnected = plaidStatus?.is_connected;
   const hasAccounts = accounts && accounts.length > 0;
 
   if (isAccountsLoading || isPlaidLoading) {
@@ -113,10 +126,10 @@ export const Accounts: React.FC = () => {
                   </div>
                   <div className="ml-3">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {account.accountName}
+                      {account.account_name}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {account.institutionName} • {account.accountType}
+                      {account.institution_name} • {formatAccountType(account.account_type)}
                     </p>
                   </div>
                 </div>
@@ -129,15 +142,15 @@ export const Accounts: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Current Balance</span>
                   <span className="text-lg font-bold text-gray-900 dark:text-white">
-                    ${account.currentBalance?.toLocaleString() || '0.00'}
+                    ${(parseFloat(account.current_balance?.toString() || '0') || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
 
-                {account.availableBalance && account.availableBalance !== account.currentBalance && (
+                {account.available_balance && (parseFloat(account.available_balance.toString()) || 0) !== (parseFloat(account.current_balance?.toString() || '0') || 0) && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Available Balance</span>
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      ${account.availableBalance.toLocaleString()}
+                      ${(parseFloat(account.available_balance.toString()) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 )}
@@ -156,7 +169,7 @@ export const Accounts: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-500 dark:text-gray-400">Last Updated</span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {new Date().toLocaleDateString()}
+                    {account.last_sync ? new Date(account.last_sync).toLocaleDateString() : 'Never'}
                   </span>
                 </div>
               </div>
@@ -200,7 +213,7 @@ export const Accounts: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total Balance</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${accounts?.reduce((sum, account) => sum + (account.currentBalance || 0), 0).toLocaleString() || '0'}
+                  ${(accounts?.reduce((sum, account) => sum + (parseFloat(account.current_balance?.toString() || '0') || 0), 0) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
             </div>
@@ -228,7 +241,7 @@ export const Accounts: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">Institutions</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {new Set(accounts?.map(account => account.institutionName)).size || 0}
+                  {new Set(accounts?.map(account => account.institution_name)).size || 0}
                 </p>
               </div>
             </div>
