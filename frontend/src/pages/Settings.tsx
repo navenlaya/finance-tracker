@@ -345,15 +345,15 @@ export const Settings: React.FC = () => {
                         Bank Account
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {plaidStatus?.isConnected || plaidStatus?.is_connected
-                          ? `Connected to ${plaidStatus.institutionName || plaidStatus.institution_name || 'your bank'}`
+                        {plaidStatus?.is_connected
+                          ? `Connected to ${plaidStatus.institution_name || 'your bank'}`
                           : 'No bank account connected'}
                       </p>
                     </div>
                   </div>
                   
                   <div className="flex items-center space-x-3">
-                    {plaidStatus?.isConnected || plaidStatus?.is_connected ? (
+                    {plaidStatus?.is_connected ? (
                       <>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                           Connected

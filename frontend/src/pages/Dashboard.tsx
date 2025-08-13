@@ -41,12 +41,11 @@ export const Dashboard: React.FC = () => {
     plaidLoading: isPlaidLoading,
     plaidError,
     dashboardData,
-    isConnected: plaidStatus?.isConnected,
-    is_connected: plaidStatus?.is_connected,
+    isConnected: plaidStatus?.is_connected,
     recentTransactions: dashboardData?.recentTransactions,
     recentTransactionsLength: dashboardData?.recentTransactions?.length,
-    shouldShowConnectionAlert: !(plaidStatus?.isConnected || plaidStatus?.is_connected),
-    shouldShowSyncButton: (plaidStatus?.isConnected || plaidStatus?.is_connected)
+    shouldShowConnectionAlert: !plaidStatus?.is_connected,
+    shouldShowSyncButton: plaidStatus?.is_connected
   });
 
   if (isDashboardLoading) {
@@ -84,11 +83,10 @@ export const Dashboard: React.FC = () => {
 
       {/* Plaid Connection Alert */}
       {(() => {
-        const shouldShowConnectionAlert = !(plaidStatus?.isConnected || plaidStatus?.is_connected);
+        const shouldShowConnectionAlert = !plaidStatus?.is_connected;
         console.log('Connection Alert Debug:', {
           plaidStatus,
-          isConnected: plaidStatus?.isConnected,
-          is_connected: plaidStatus?.is_connected,
+          isConnected: plaidStatus?.is_connected,
           shouldShowConnectionAlert
         });
         return shouldShowConnectionAlert;
@@ -112,15 +110,14 @@ export const Dashboard: React.FC = () => {
       {/* Sync Transactions Alert for Connected Users - Only show if connected, has accounts, but no recent transactions */}
       {(() => {
         console.log('=== SYNC BUTTON SECTION IS BEING EVALUATED ===');
-        const isConnected = plaidStatus?.isConnected || plaidStatus?.is_connected;
-        const hasAccounts = plaidStatus?.accountsCount && plaidStatus.accountsCount > 0;
+        const isConnected = plaidStatus?.is_connected;
+        const hasAccounts = plaidStatus?.accounts_count && plaidStatus.accounts_count > 0;
         const hasTransactions = dashboardData?.recentTransactions && dashboardData.recentTransactions.length > 0;
         const shouldShowSyncButton = isConnected && hasAccounts && !hasTransactions;
         console.log('Sync Button Debug:', {
           plaidStatus,
-          isConnectedField: plaidStatus?.isConnected,
-          is_connectedField: plaidStatus?.is_connected,
-          accountsCount: plaidStatus?.accountsCount,
+          isConnectedField: plaidStatus?.is_connected,
+          accountsCount: plaidStatus?.accounts_count,
           recentTransactionsLength: dashboardData?.recentTransactions?.length,
           isConnected,
           hasAccounts,

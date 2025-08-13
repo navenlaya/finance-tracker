@@ -43,13 +43,7 @@ export const Transactions: React.FC = () => {
     }
   );
 
-  function getStartDate(range: string): string {
-    const today = new Date();
-    const daysBack = parseInt(range);
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - daysBack);
-    return startDate.toISOString().split('T')[0];
-  }
+
 
   function getCategoryIcon(category: string[] | undefined): React.ReactNode {
     if (category?.includes('food') || category?.includes('restaurant')) {
@@ -67,7 +61,7 @@ export const Transactions: React.FC = () => {
     }
   }
 
-  function formatAmount(amount: number, transactionType?: string): string {
+  function formatAmount(amount: number): string {
     // TEMPORARY FIX: Reverse the logic since the data seems backwards
     // In a real system, this should use transaction_type from the backend
     const isExpense = amount > 0; // Changed from < 0 to > 0
@@ -283,7 +277,7 @@ export const Transactions: React.FC = () => {
       </div>
 
       {/* Summary Stats - Temporarily disabled */}
-      {false && transactions && transactions.length > 0 && (
+      {false && (transactions?.length ?? 0) > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="card">
             <div className="flex items-center">
@@ -294,8 +288,8 @@ export const Transactions: React.FC = () => {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total Income</p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   ${(transactions
-                    .filter(t => t.amount > 0)
-                    .reduce((sum, t) => sum + (t.amount || 0), 0) || 0)
+                    ?.filter(t => t.amount > 0)
+                    ?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0)
                     .toFixed(2)}
                 </p>
               </div>
@@ -311,8 +305,8 @@ export const Transactions: React.FC = () => {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total Expenses</p>
                 <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                   ${Math.abs(transactions
-                    .filter(t => t.amount < 0)
-                    .reduce((sum, t) => sum + (t.amount || 0), 0) || 0)
+                    ?.filter(t => t.amount < 0)
+                    ?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0)
                     .toFixed(2)}
                 </p>
               </div>
@@ -326,8 +320,8 @@ export const Transactions: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">Net Flow</p>
-                <p className={`text-2xl font-bold ${getAmountColor(transactions.reduce((sum, t) => sum + (t.amount || 0), 0) || 0)}`}>
-                  {formatAmount(transactions.reduce((sum, t) => sum + (t.amount || 0), 0) || 0)}
+                <p className={`text-2xl font-bold ${getAmountColor(transactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0)}`}>
+                  {formatAmount(transactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0)}
                 </p>
               </div>
             </div>
