@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# ⚠️  WARNING: DO NOT DELETE USER DATA ⚠️
+# This script should NEVER be used to reset existing data
+# Only use for initial setup or when explicitly requested by user
+# Existing user accounts and financial data should be preserved at all costs
+
 # Finance Tracker Setup Script
 echo "🏦 Finance Tracker Setup Script"
 echo "================================"

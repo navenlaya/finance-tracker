@@ -1,5 +1,18 @@
 # Finance Tracker
 
+⚠️ **IMPORTANT: DO NOT DELETE USER DATA** ⚠️
+
+**For future conversations and development:**
+- **NEVER** delete the `postgres_data` volume or run `docker compose down` with volume removal
+- **NEVER** reset the database unless explicitly requested by the user
+- **ALWAYS** preserve existing user accounts, transactions, and financial data
+- **ONLY** clear data if the user specifically asks for a fresh start
+- **BACKUP** any important data before making destructive changes
+
+This project contains real user financial data that should be preserved at all costs.
+
+---
+
 A comprehensive, full-stack personal finance management application with real bank account integration via Plaid API. Built with modern technologies and designed with professional-grade architecture.
 
 ![Version](https://img.shields.io/badge/Version-1.0.0-blue)
