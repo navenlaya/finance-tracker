@@ -75,6 +75,26 @@ export const Transactions: React.FC = () => {
     return amount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400';
   }
 
+  function detectCategoryFromName(name: string): string {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('mcdonald') || lowerName.includes('starbucks') || lowerName.includes('restaurant')) {
+      return 'Food & Dining';
+    }
+    if (lowerName.includes('uber') || lowerName.includes('lyft') || lowerName.includes('transport')) {
+      return 'Transportation';
+    }
+    if (lowerName.includes('sparkfun') || lowerName.includes('amazon') || lowerName.includes('shop')) {
+      return 'Shopping';
+    }
+    if (lowerName.includes('united') || lowerName.includes('airline') || lowerName.includes('travel')) {
+      return 'Travel';
+    }
+    if (lowerName.includes('credit') || lowerName.includes('payment') || lowerName.includes('intrst')) {
+      return 'Income';
+    }
+    return 'Other';
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -209,9 +229,9 @@ export const Transactions: React.FC = () => {
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
                         {transaction.amount > 0 ? (
-                          <TrendingUp className="h-5 w-5 text-red-500" />
+                          <TrendingDown className="h-5 w-5 text-red-500" />
                         ) : (
-                          <TrendingDown className="h-5 w-5 text-green-500" />
+                          <TrendingUp className="h-5 w-5 text-green-500" />
                         )}
                       </div>
                       <div className="ml-3">
@@ -230,7 +250,7 @@ export const Transactions: React.FC = () => {
                     <div className="flex items-center">
                       {getCategoryIcon(transaction.category)}
                       <span className="ml-2 text-sm text-gray-900 dark:text-white">
-                        {transaction.customCategory || transaction.category?.[0] || 'Uncategorized'}
+                        {transaction.customCategory || transaction.category?.[0] || detectCategoryFromName(transaction.name)}
                       </span>
                     </div>
                   </td>
