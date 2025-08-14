@@ -70,8 +70,8 @@ export const Transactions: React.FC = () => {
   }
 
   function getAmountColor(amount: number): string {
-    // TEMPORARY FIX: Reverse the color logic to match the reversed amount logic
-    // In a real system, this should use transaction_type from the backend
+    // Amount > 0 = Debit transaction (expense) = Red
+    // Amount < 0 = Credit transaction (income) = Green
     return amount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400';
   }
 
@@ -209,9 +209,9 @@ export const Transactions: React.FC = () => {
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
                         {transaction.amount > 0 ? (
-                          <TrendingDown className="h-5 w-5 text-red-500" />
+                          <TrendingUp className="h-5 w-5 text-red-500" />
                         ) : (
-                          <TrendingUp className="h-5 w-5 text-green-500" />
+                          <TrendingDown className="h-5 w-5 text-green-500" />
                         )}
                       </div>
                       <div className="ml-3">
