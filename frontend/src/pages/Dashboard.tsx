@@ -63,7 +63,7 @@ export const Dashboard: React.FC = () => {
       return 'Income';
     }
     if (lowerName.includes('credit') || lowerName.includes('payment') || lowerName.includes('intrst')) {
-      return 'Expenses';
+      return 'Income';
     }
     return 'Other';
   }
