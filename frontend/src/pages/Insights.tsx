@@ -73,6 +73,28 @@ export const Insights: React.FC = () => {
     return colors[category as keyof typeof colors] || 'bg-gray-500';
   }
 
+  function getCategoryIcon(category: string[] | undefined): React.ReactNode {
+    if (category?.includes('food') || category?.includes('restaurant')) {
+      return <span className="text-orange-500">🍽️</span>;
+    } else if (category?.includes('transport') || category?.includes('travel')) {
+      return <span className="text-blue-500">🚗</span>;
+    } else if (category?.includes('shopping')) {
+      return <span className="text-purple-500">🛍️</span>;
+    } else if (category?.includes('entertainment')) {
+      return <span className="text-pink-500">🎬</span>;
+    } else if (category?.includes('health')) {
+      return <span className="text-green-500">🏥</span>;
+    } else if (category?.includes('utilities') || category?.includes('bills')) {
+      return <span className="text-yellow-500">💡</span>;
+    } else if (category?.includes('housing') || category?.includes('rent')) {
+      return <span className="text-indigo-500">🏠</span>;
+    } else if (category?.includes('education')) {
+      return <span className="text-teal-500">📚</span>;
+    } else {
+      return <span className="text-gray-500">💰</span>;
+    }
+  }
+
   function getInsightIcon(insightType: string): React.ReactNode {
     switch (insightType) {
       case 'trend':
@@ -179,8 +201,9 @@ export const Insights: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Savings</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                ${dashboardData?.monthlySavings?.toLocaleString() || '0'}
+              <p className={`text-2xl font-bold ${(dashboardData?.monthlySavings || 0) >= 0 ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'}`}>
+                ${Math.abs(dashboardData?.monthlySavings || 0).toLocaleString()}
+                {(dashboardData?.monthlySavings || 0) < 0 && ' (Deficit)'}
               </p>
             </div>
           </div>
@@ -198,24 +221,33 @@ export const Insights: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            {dashboardData?.spendingByCategory?.map((category) => (
-              <div key={category.category} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className={`w-3 h-3 rounded-full ${getCategoryColor(category.category)} mr-3`} />
-                  <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
-                    {category.category}
-                  </span>
+            {dashboardData?.spendingByCategory && dashboardData.spendingByCategory.length > 0 ? (
+              dashboardData.spendingByCategory.map((category) => (
+                <div key={category.category} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className={`w-3 h-3 rounded-full ${getCategoryColor(category.category)} mr-3`} />
+                    <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                      {category.category}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      ${category.amount.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {category.percentage.toFixed(1)}%
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    ${category.amount.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {category.percentage.toFixed(1)}%
-                  </p>
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <PieChart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">
+                  No spending data available. Connect your bank account to see category breakdowns.
+                </p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -229,26 +261,35 @@ export const Insights: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            {insights?.slice(0, 5).map((insight, index) => (
-              <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="flex items-start">
-                  {getInsightIcon(insight.insightType)}
-                  <div className="ml-3 flex-1">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                      {insight.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      {insight.description}
-                    </p>
-                    {insight.category && (
-                      <span className="inline-block mt-2 px-2 py-1 text-xs bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded">
-                        {insight.category}
-                      </span>
-                    )}
+            {insights && insights.length > 0 ? (
+              insights.slice(0, 5).map((insight, index) => (
+                <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-start">
+                    {getInsightIcon(insight.insightType)}
+                    <div className="ml-3 flex-1">
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                        {insight.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        {insight.description}
+                      </p>
+                      {insight.category && (
+                        <span className="inline-block mt-2 px-2 py-1 text-xs bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded">
+                          {insight.category}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <Lightbulb className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">
+                  AI insights will appear here as you add more transactions.
+                </p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
@@ -263,25 +304,34 @@ export const Insights: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {forecast?.map((item, index) => (
-            <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
-                  {item.category}
-                </span>
-                {getTrendIcon(item.trend)}
+          {forecast && forecast.length > 0 ? (
+            forecast.map((item, index) => (
+              <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                    {item.category}
+                  </span>
+                  {getTrendIcon(item.trend)}
+                </div>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  ${item.forecastAmount.toFixed(2)}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Confidence: {item.confidenceIntervalLower.toFixed(0)}% - {item.confidenceIntervalUpper.toFixed(0)}%
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Trend: {item.trend}
+                </p>
               </div>
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
-                ${item.forecastAmount.toFixed(2)}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Confidence: {item.confidenceIntervalLower.toFixed(0)}% - {item.confidenceIntervalUpper.toFixed(0)}%
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Trend: {item.trend}
+            ))
+          ) : (
+            <div className="col-span-full text-center py-8">
+              <LineChart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">
+                Spending forecasts will appear here as we analyze your spending patterns.
               </p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
@@ -296,25 +346,36 @@ export const Insights: React.FC = () => {
 
         <div className="space-y-3">
           {dashboardData?.recentTransactions?.slice(0, 5).map((transaction) => (
-            <div key={transaction.id} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+            <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
               <div className="flex items-center">
-                <div className={`w-2 h-2 rounded-full ${transaction.amount > 0 ? 'bg-red-500' : 'bg-green-500'} mr-3`} />
+                <div className="flex-shrink-0 mr-3">
+                  {getCategoryIcon(transaction.category)}
+                </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     {transaction.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {new Date(transaction.date).toLocaleDateString()}
-                  </p>
+                  <div className="flex items-center mt-1">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(transaction.date).toLocaleDateString()}
+                    </span>
+                    <span className="mx-2 text-gray-300">•</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                      {transaction.customCategory || transaction.category?.[0] || 'Uncategorized'}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="text-right">
                 <p className={`text-sm font-medium ${transaction.amount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                   {transaction.amount > 0 ? '-' : '+'}${Math.abs(transaction.amount).toFixed(2)}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                  {transaction.customCategory || transaction.category?.[0] || 'Uncategorized'}
-                </p>
+                <div className="flex items-center justify-end mt-1">
+                  <div className={`w-2 h-2 rounded-full ${transaction.amount > 0 ? 'bg-red-500' : 'bg-green-500'} mr-2`} />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {transaction.amount > 0 ? 'Expense' : 'Income'}
+                  </span>
+                </div>
               </div>
             </div>
           ))}
@@ -328,9 +389,9 @@ export const Insights: React.FC = () => {
             Savings Rate
           </h3>
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+            <div className={`text-3xl font-bold ${(dashboardData?.monthlySavings || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} mb-2`}>
               {dashboardData?.monthlyIncome && dashboardData.monthlyIncome > 0
-                ? ((dashboardData.monthlySavings / dashboardData.monthlyIncome) * 100).toFixed(1)
+                ? Math.abs((dashboardData.monthlySavings / dashboardData.monthlyIncome) * 100).toFixed(1)
                 : '0'}%
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -346,7 +407,7 @@ export const Insights: React.FC = () => {
           <div className="text-center">
             <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
               {dashboardData?.monthlyIncome && dashboardData.monthlyIncome > 0
-                ? ((dashboardData.monthlyExpenses / dashboardData.monthlyIncome) * 100).toFixed(1)
+                ? Math.min((dashboardData.monthlyExpenses / dashboardData.monthlyIncome) * 100, 100).toFixed(1)
                 : '0'}%
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">
