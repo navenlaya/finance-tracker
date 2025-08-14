@@ -181,19 +181,32 @@ async def get_dashboard_data(
     
     # Calculate spending by category
     spending_by_category = {}
+    logger.info(f"Processing {len(monthly_txns)} monthly transactions for category breakdown")
+    
     for txn in monthly_txns:
-        if txn.amount < 0:  # Only expenses
+        if txn.transaction_type == "debit":  # Only expenses (debit transactions)
             # Use custom category if available, otherwise use first Plaid category, then fallback to name detection
             category = txn.custom_category or (txn.category[0] if txn.category else detect_category_from_name(txn.name))
-            amount = abs(float(txn.amount))
+            amount = abs(float(txn.amount))  # Always use positive amount for display
+            
+            logger.info(f"Transaction: {txn.name}, Amount: {txn.amount}, Detected Category: {category}, Processed Amount: {amount}")
             
             if category in spending_by_category:
                 spending_by_category[category] += amount
+                logger.info(f"Added {amount} to existing category {category}, new total: {spending_by_category[category]}")
             else:
                 spending_by_category[category] = amount
+                logger.info(f"Created new category {category} with amount {amount}")
     
     # Convert to list format for frontend
     total_expenses = sum(spending_by_category.values())
+    
+    # Debug logging for spending by category
+    logger.info(f"Total expenses: {total_expenses}")
+    for category, amount in spending_by_category.items():
+        percentage = (amount / total_expenses * 100) if total_expenses > 0 else 0
+        logger.info(f"Category: {category}, Amount: {amount}, Percentage: {percentage}%")
+    
     spending_by_category_list = [
         {
             "category": category,
