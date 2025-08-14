@@ -48,6 +48,26 @@ export const Dashboard: React.FC = () => {
     shouldShowSyncButton: plaidStatus?.is_connected
   });
 
+  function detectCategoryFromName(name: string): string {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('mcdonald') || lowerName.includes('starbucks') || lowerName.includes('restaurant')) {
+      return 'Food & Dining';
+    }
+    if (lowerName.includes('uber') || lowerName.includes('lyft') || lowerName.includes('transport')) {
+      return 'Transportation';
+    }
+    if (lowerName.includes('sparkfun') || lowerName.includes('amazon') || lowerName.includes('shop')) {
+      return 'Shopping';
+    }
+    if (lowerName.includes('united') || lowerName.includes('airline') || lowerName.includes('travel')) {
+      return 'Income';
+    }
+    if (lowerName.includes('credit') || lowerName.includes('payment') || lowerName.includes('intrst')) {
+      return 'Expenses';
+    }
+    return 'Other';
+  }
+
   if (isDashboardLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -353,7 +373,7 @@ export const Dashboard: React.FC = () => {
                     </td>
                     <td className="py-3">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                        {transaction.customCategory || transaction.category?.[0] || 'Uncategorized'}
+                        {transaction.customCategory || transaction.category?.[0] || detectCategoryFromName(transaction.name)}
                       </span>
                     </td>
                     <td className="py-3 text-sm text-gray-500 dark:text-gray-400">

@@ -45,7 +45,8 @@ export const Transactions: React.FC = () => {
 
 
 
-  function getCategoryIcon(category: string[] | undefined): React.ReactNode {
+  function getCategoryIcon(category: string[] | undefined, transactionName?: string): React.ReactNode {
+    // First try to get icon from Plaid category
     if (category?.includes('food') || category?.includes('restaurant')) {
       return <span className="text-orange-500">🍽️</span>;
     } else if (category?.includes('transport') || category?.includes('travel')) {
@@ -56,9 +57,29 @@ export const Transactions: React.FC = () => {
       return <span className="text-pink-500">🎬</span>;
     } else if (category?.includes('health')) {
       return <span className="text-green-500">🏥</span>;
-    } else {
-      return <span className="text-gray-500">💰</span>;
     }
+    
+    // Fallback to name-based detection for better emoji coverage
+    if (transactionName) {
+      const lowerName = transactionName.toLowerCase();
+      if (lowerName.includes('mcdonald') || lowerName.includes('starbucks') || lowerName.includes('restaurant')) {
+        return <span className="text-orange-500">🍽️</span>;
+      }
+      if (lowerName.includes('uber') || lowerName.includes('lyft') || lowerName.includes('transport')) {
+        return <span className="text-blue-500">🚗</span>;
+      }
+      if (lowerName.includes('sparkfun') || lowerName.includes('amazon') || lowerName.includes('shop')) {
+        return <span className="text-purple-500">🛍️</span>;
+      }
+      if (lowerName.includes('united') || lowerName.includes('airline') || lowerName.includes('travel')) {
+        return <span className="text-green-500">💰</span>;
+      }
+      if (lowerName.includes('credit') || lowerName.includes('payment') || lowerName.includes('intrst')) {
+        return <span className="text-green-500">💰</span>;
+      }
+    }
+    
+    return <span className="text-gray-500">💰</span>;
   }
 
   function formatAmount(amount: number): string {
@@ -87,7 +108,7 @@ export const Transactions: React.FC = () => {
       return 'Shopping';
     }
     if (lowerName.includes('united') || lowerName.includes('airline') || lowerName.includes('travel')) {
-      return 'Travel';
+      return 'Income';
     }
     if (lowerName.includes('credit') || lowerName.includes('payment') || lowerName.includes('intrst')) {
       return 'Income';
@@ -248,7 +269,7 @@ export const Transactions: React.FC = () => {
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center">
-                      {getCategoryIcon(transaction.category)}
+                      {getCategoryIcon(transaction.category, transaction.name)}
                       <span className="ml-2 text-sm text-gray-900 dark:text-white">
                         {transaction.customCategory || transaction.category?.[0] || detectCategoryFromName(transaction.name)}
                       </span>
