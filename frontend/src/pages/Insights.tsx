@@ -298,7 +298,7 @@ export const Insights: React.FC = () => {
           {dashboardData?.recentTransactions?.slice(0, 5).map((transaction) => (
             <div key={transaction.id} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
               <div className="flex items-center">
-                <div className={`w-2 h-2 rounded-full ${transaction.amount < 0 ? 'bg-red-500' : 'bg-green-500'} mr-3`} />
+                <div className={`w-2 h-2 rounded-full ${transaction.amount > 0 ? 'bg-red-500' : 'bg-green-500'} mr-3`} />
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     {transaction.name}
@@ -309,8 +309,8 @@ export const Insights: React.FC = () => {
                 </div>
               </div>
               <div className="text-right">
-                <p className={`text-sm font-medium ${transaction.amount < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                  {transaction.amount < 0 ? '-' : '+'}${Math.abs(transaction.amount).toFixed(2)}
+                <p className={`text-sm font-medium ${transaction.amount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                  {transaction.amount > 0 ? '-' : '+'}${Math.abs(transaction.amount).toFixed(2)}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
                   {transaction.customCategory || transaction.category?.[0] || 'Uncategorized'}

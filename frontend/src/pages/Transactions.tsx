@@ -208,7 +208,7 @@ export const Transactions: React.FC = () => {
                   <td className="py-4 px-4">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
-                        {transaction.amount < 0 ? (
+                        {transaction.amount > 0 ? (
                           <TrendingDown className="h-5 w-5 text-red-500" />
                         ) : (
                           <TrendingUp className="h-5 w-5 text-green-500" />
