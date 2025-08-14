@@ -20,7 +20,7 @@ export const Dashboard: React.FC = () => {
   
   // Fetch dashboard data
   const { data: dashboardData, isLoading: isDashboardLoading } = useQuery(
-    'dashboard',
+    'dashboard-data',
     transactionsApi.getDashboardData
   );
 

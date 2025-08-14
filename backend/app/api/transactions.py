@@ -67,6 +67,44 @@ async def get_dashboard_data(
     logger = logging.getLogger(__name__)
     logger.info(f"Dashboard request for user_id: {current_user.id}")
     
+    def detect_category_from_name(name: str) -> str:
+        """Detect category from transaction name when Plaid categories are not available."""
+        lower_name = name.lower()
+        
+        # Food & Dining
+        if any(word in lower_name for word in ['mcdonald', 'starbucks', 'restaurant', 'cafe', 'pizza', 'burger', 'food', 'dining', 'grubhub', 'doordash', 'uber eats', 'postmates']):
+            return "Food & Dining"
+        
+        # Transportation
+        if any(word in lower_name for word in ['uber', 'lyft', 'taxi', 'gas', 'shell', 'exxon', 'chevron', 'bp', 'parking', 'toll', 'metro', 'bus', 'train', 'airline']):
+            return "Transportation"
+        
+        # Shopping
+        if any(word in lower_name for word in ['amazon', 'walmart', 'target', 'costco', 'best buy', 'home depot', 'lowes', 'macy', 'nordstrom', 'shop']):
+            return "Shopping"
+        
+        # Entertainment
+        if any(word in lower_name for word in ['netflix', 'spotify', 'hulu', 'disney', 'movie', 'theater', 'concert', 'game', 'steam', 'playstation']):
+            return "Entertainment"
+        
+        # Health & Fitness
+        if any(word in lower_name for word in ['gym', 'fitness', 'pharmacy', 'cvs', 'walgreens', 'doctor', 'medical', 'dental', 'vision', 'health']):
+            return "Health & Fitness"
+        
+        # Utilities & Bills
+        if any(word in lower_name for word in ['electric', 'gas bill', 'water', 'internet', 'phone', 'cable', 'at&t', 'verizon', 'comcast', 'spectrum']):
+            return "Utilities & Bills"
+        
+        # Banking & Finance
+        if any(word in lower_name for word in ['bank', 'atm', 'credit card', 'loan', 'mortgage', 'insurance']):
+            return "Banking & Finance"
+        
+        # Income
+        if any(word in lower_name for word in ['deposit', 'salary', 'payroll', 'refund', 'transfer in']):
+            return "Income"
+        
+        return "Other"
+    
     # Get all user accounts
     account_result = await db.execute(
         select(Account).where(Account.user_id == current_user.id)
@@ -104,12 +142,24 @@ async def get_dashboard_data(
     
     recent_transactions = []
     for txn in recent_transactions_data:
+        # Log transaction data for debugging
+        logger.info(f"Transaction: {txn.name}")
+        logger.info(f"  Category: {txn.category}")
+        logger.info(f"  Custom Category: {txn.custom_category}")
+        logger.info(f"  Amount: {txn.amount}")
+        logger.info(f"  Type: {txn.transaction_type}")
+        
         recent_transactions.append({
             "id": str(txn.id),
-            "description": txn.name,  # Transaction model uses 'name' field
-            "amount": str(txn.amount),
+            "name": txn.name,  # Use 'name' to match frontend interface
+            "amount": float(txn.amount),  # Convert to float for frontend
             "date": txn.date.isoformat(),
-            "category": txn.custom_category or "Uncategorized"
+            "category": txn.category,  # Plaid categories array
+            "customCategory": txn.custom_category,  # Custom category if set
+            "merchantName": txn.merchant_name,
+            "transactionType": txn.transaction_type,
+            "pending": txn.pending,
+            "accountId": str(txn.account_id)
         })
     
     # Calculate monthly stats (simplified - last 30 days)
@@ -129,6 +179,33 @@ async def get_dashboard_data(
     monthly_expenses = abs(sum(txn.amount for txn in monthly_txns if txn.amount < 0))
     monthly_savings = monthly_income - monthly_expenses
     
+    # Calculate spending by category
+    spending_by_category = {}
+    for txn in monthly_txns:
+        if txn.amount < 0:  # Only expenses
+            # Use custom category if available, otherwise use first Plaid category, then fallback to name detection
+            category = txn.custom_category or (txn.category[0] if txn.category else detect_category_from_name(txn.name))
+            amount = abs(float(txn.amount))
+            
+            if category in spending_by_category:
+                spending_by_category[category] += amount
+            else:
+                spending_by_category[category] = amount
+    
+    # Convert to list format for frontend
+    total_expenses = sum(spending_by_category.values())
+    spending_by_category_list = [
+        {
+            "category": category,
+            "amount": amount,
+            "percentage": (amount / total_expenses * 100) if total_expenses > 0 else 0
+        }
+        for category, amount in spending_by_category.items()
+    ]
+    
+    # Sort by amount descending
+    spending_by_category_list.sort(key=lambda x: x["amount"], reverse=True)
+    
     # Return plain dictionary with camelCase keys for frontend compatibility
     return {
         "totalBalance": float(total_balance),
@@ -137,7 +214,7 @@ async def get_dashboard_data(
         "monthlySavings": float(monthly_savings),
         "accountSummary": account_summary,
         "recentTransactions": recent_transactions,
-        "spendingByCategory": [],  # TODO: Implement category breakdown
+        "spendingByCategory": spending_by_category_list,
         "budgetStatus": [],  # TODO: Implement budget tracking
         "spendingInsights": [],  # TODO: Implement insights
         "forecasts": []  # TODO: Implement forecasting

@@ -73,7 +73,85 @@ export const Insights: React.FC = () => {
     return colors[category as keyof typeof colors] || 'bg-gray-500';
   }
 
-  function getCategoryIcon(category: string[] | undefined): React.ReactNode {
+  function detectCategoryFromName(name: string): string {
+    const lowerName = name.toLowerCase();
+    
+    // Food & Dining
+    if (lowerName.includes('mcdonald') || lowerName.includes('starbucks') || 
+        lowerName.includes('restaurant') || lowerName.includes('cafe') || 
+        lowerName.includes('pizza') || lowerName.includes('burger') ||
+        lowerName.includes('food') || lowerName.includes('dining') ||
+        lowerName.includes('grubhub') || lowerName.includes('doordash') ||
+        lowerName.includes('uber eats') || lowerName.includes('postmates')) {
+      return 'Food & Dining';
+    }
+    
+    // Transportation
+    if (lowerName.includes('uber') || lowerName.includes('lyft') || 
+        lowerName.includes('taxi') || lowerName.includes('gas') ||
+        lowerName.includes('shell') || lowerName.includes('exxon') ||
+        lowerName.includes('chevron') || lowerName.includes('bp') ||
+        lowerName.includes('parking') || lowerName.includes('toll') ||
+        lowerName.includes('metro') || lowerName.includes('bus') ||
+        lowerName.includes('train') || lowerName.includes('airline')) {
+      return 'Transportation';
+    }
+    
+    // Shopping
+    if (lowerName.includes('amazon') || lowerName.includes('walmart') || 
+        lowerName.includes('target') || lowerName.includes('costco') ||
+        lowerName.includes('best buy') || lowerName.includes('home depot') ||
+        lowerName.includes('lowes') || lowerName.includes('macy') ||
+        lowerName.includes('nordstrom') || lowerName.includes('shop')) {
+      return 'Shopping';
+    }
+    
+    // Entertainment
+    if (lowerName.includes('netflix') || lowerName.includes('spotify') || 
+        lowerName.includes('hulu') || lowerName.includes('disney') ||
+        lowerName.includes('movie') || lowerName.includes('theater') ||
+        lowerName.includes('concert') || lowerName.includes('game') ||
+        lowerName.includes('steam') || lowerName.includes('playstation')) {
+      return 'Entertainment';
+    }
+    
+    // Health & Fitness
+    if (lowerName.includes('gym') || lowerName.includes('fitness') || 
+        lowerName.includes('pharmacy') || lowerName.includes('cvs') ||
+        lowerName.includes('walgreens') || lowerName.includes('doctor') ||
+        lowerName.includes('medical') || lowerName.includes('dental') ||
+        lowerName.includes('vision') || lowerName.includes('health')) {
+      return 'Health & Fitness';
+    }
+    
+    // Utilities & Bills
+    if (lowerName.includes('electric') || lowerName.includes('gas bill') || 
+        lowerName.includes('water') || lowerName.includes('internet') ||
+        lowerName.includes('phone') || lowerName.includes('cable') ||
+        lowerName.includes('at&t') || lowerName.includes('verizon') ||
+        lowerName.includes('comcast') || lowerName.includes('spectrum')) {
+      return 'Utilities & Bills';
+    }
+    
+    // Banking & Finance
+    if (lowerName.includes('bank') || lowerName.includes('atm') || 
+        lowerName.includes('credit card') || lowerName.includes('loan') ||
+        lowerName.includes('mortgage') || lowerName.includes('insurance')) {
+      return 'Banking & Finance';
+    }
+    
+    // Income
+    if (lowerName.includes('deposit') || lowerName.includes('salary') || 
+        lowerName.includes('payroll') || lowerName.includes('refund') ||
+        lowerName.includes('transfer in')) {
+      return 'Income';
+    }
+    
+    return 'Other';
+  }
+
+  function getCategoryIcon(category: string[] | undefined, transactionName?: string): React.ReactNode {
+    // First try to use Plaid categories
     if (category?.includes('food') || category?.includes('restaurant')) {
       return <span className="text-orange-500">🍽️</span>;
     } else if (category?.includes('transport') || category?.includes('travel')) {
@@ -90,9 +168,22 @@ export const Insights: React.FC = () => {
       return <span className="text-indigo-500">🏠</span>;
     } else if (category?.includes('education')) {
       return <span className="text-teal-500">📚</span>;
-    } else {
-      return <span className="text-gray-500">💰</span>;
     }
+    
+    // Fallback to name-based detection
+    if (transactionName) {
+      const detectedCategory = detectCategoryFromName(transactionName);
+      if (detectedCategory === 'Food & Dining') return <span className="text-orange-500">🍽️</span>;
+      if (detectedCategory === 'Transportation') return <span className="text-blue-500">🚗</span>;
+      if (detectedCategory === 'Shopping') return <span className="text-purple-500">🛍️</span>;
+      if (detectedCategory === 'Entertainment') return <span className="text-pink-500">🎬</span>;
+      if (detectedCategory === 'Health & Fitness') return <span className="text-green-500">🏥</span>;
+      if (detectedCategory === 'Utilities & Bills') return <span className="text-yellow-500">💡</span>;
+      if (detectedCategory === 'Banking & Finance') return <span className="text-indigo-500">🏦</span>;
+      if (detectedCategory === 'Income') return <span className="text-teal-500">💰</span>;
+    }
+    
+    return <span className="text-gray-500">💰</span>;
   }
 
   function getInsightIcon(insightType: string): React.ReactNode {
@@ -345,11 +436,17 @@ export const Insights: React.FC = () => {
         </div>
 
         <div className="space-y-3">
-          {dashboardData?.recentTransactions?.slice(0, 5).map((transaction) => (
+          {dashboardData?.recentTransactions?.slice(0, 5).map((transaction) => {
+            // Debug logging
+            console.log('Transaction data:', transaction);
+            console.log('Category:', transaction.category);
+            console.log('Custom Category:', transaction.customCategory);
+            
+            return (
             <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
               <div className="flex items-center">
                 <div className="flex-shrink-0 mr-3">
-                  {getCategoryIcon(transaction.category)}
+                  {getCategoryIcon(transaction.category, transaction.name)}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -361,7 +458,7 @@ export const Insights: React.FC = () => {
                     </span>
                     <span className="mx-2 text-gray-300">•</span>
                     <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                      {transaction.customCategory || transaction.category?.[0] || 'Uncategorized'}
+                      {transaction.customCategory || transaction.category?.[0] || detectCategoryFromName(transaction.name)}
                     </span>
                   </div>
                 </div>
@@ -378,7 +475,8 @@ export const Insights: React.FC = () => {
                 </div>
               </div>
             </div>
-          ))}
+          );
+          })}
         </div>
       </div>
 

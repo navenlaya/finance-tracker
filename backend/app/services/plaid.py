@@ -365,6 +365,12 @@ class PlaidService:
                     account = account_result.scalar_one_or_none()
                     
                     if account:
+                        # Log category information for debugging
+                        logger.info(f"Creating transaction: {plaid_transaction['name']}")
+                        logger.info(f"  Plaid category: {plaid_transaction.get('category')}")
+                        logger.info(f"  Plaid category_id: {plaid_transaction.get('category_id')}")
+                        logger.info(f"  Amount: {plaid_transaction['amount']}")
+                        
                         # Create new transaction
                         new_transaction = Transaction(
                             user_id=user.id,
@@ -379,7 +385,7 @@ class PlaidService:
                             authorized_date=plaid_transaction['authorized_date'] if isinstance(plaid_transaction.get('authorized_date'), date) else datetime.strptime(plaid_transaction['authorized_date'], '%Y-%m-%d').date() if plaid_transaction.get('authorized_date') else None,
                             category=plaid_transaction.get('category'),
                             category_id=plaid_transaction.get('category_id'),
-                            transaction_type="debit" if plaid_transaction['amount'] > 0 else "credit",
+                            transaction_type="credit" if plaid_transaction['amount'] > 0 else "debit",
                             pending=plaid_transaction.get('pending', False),
                             location=None,  # Skip location for now to avoid serialization issues
                             plaid_metadata=None  # Skip metadata for now to avoid serialization issues
