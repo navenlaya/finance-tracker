@@ -314,6 +314,33 @@ export const mlApi = {
     return response.data;
   },
 
+  getHealthScore: async (): Promise<{
+    overallScore: number;
+    healthGrade: string;
+    metrics: {
+      incomeExpenseRatio: { score: number; status: string; ratio: number };
+      savingsRate: { score: number; status: string; rate: number };
+      spendingConsistency: { score: number; status: string; consistency: number };
+      emergencyFundScore: { score: number; status: string; monthsCovered: number };
+      debtManagement: { score: number; status: string };
+      categoryDiversity: { score: number; status: string; diversity: number };
+    };
+    recommendations: string[];
+    calculatedAt: string;
+  }> => {
+    const response = await apiClient.get('/ml/health-score');
+    return response.data;
+  },
+
+  getForecastAccuracy: async (): Promise<{
+    overallAccuracy: number;
+    categoryAccuracy: number;
+    trendAccuracy: number;
+  }> => {
+    const response = await apiClient.get('/ml/forecast-accuracy');
+    return response.data;
+  },
+
   retrainModels: async (): Promise<{ message: string }> => {
     const response = await apiClient.post('/ml/retrain');
     return response.data;
