@@ -343,13 +343,13 @@ export const Insights: React.FC = () => {
               insights.slice(0, 5).map((insight, index) => (
                 <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <div className="flex items-start">
-                    {getInsightIcon(insight.insightType)}
+                    {getInsightIcon(insight.insightType || 'info')}
                     <div className="ml-3 flex-1">
                       <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                        {insight.title}
+                        {insight.title || 'Untitled Insight'}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {insight.description}
+                        {insight.description || 'No description available.'}
                       </p>
                       {insight.category && (
                         <span className="inline-block mt-2 px-2 py-1 text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded">
@@ -357,7 +357,7 @@ export const Insights: React.FC = () => {
                         </span>
                       )}
                       <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        Confidence: {(insight.confidenceScore * 100).toFixed(0)}%
+                        Confidence: {((insight.confidenceScore || 0) * 100).toFixed(0)}%
                       </div>
                     </div>
                   </div>
@@ -485,18 +485,18 @@ export const Insights: React.FC = () => {
               <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-medium text-gray-900 dark:text-white">
-                    {item.category}
+                    {item.category || 'Unknown Category'}
                   </h3>
-                  {getTrendIcon(item.trend)}
+                  {getTrendIcon(item.trend || 'stable')}
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  ${item.forecastAmount.toFixed(2)}
+                  ${(item.forecastAmount || 0).toFixed(2)}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  Confidence: ${item.confidenceIntervalLower.toFixed(2)} - ${item.confidenceIntervalUpper.toFixed(2)}
+                  Confidence: ${(item.confidenceIntervalLower || 0).toFixed(2)} - ${(item.confidenceIntervalUpper || 0).toFixed(2)}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                  Trend: {item.trend}
+                  Trend: {item.trend || 'stable'}
                 </div>
               </div>
             ))
