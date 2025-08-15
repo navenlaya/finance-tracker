@@ -200,6 +200,7 @@ export const Insights: React.FC = () => {
   }
 
   function getHealthGradeColor(grade: string): string {
+    if (!grade) return 'text-gray-600 dark:text-gray-400';
     if (grade.startsWith('A')) return 'text-green-600 dark:text-green-400';
     if (grade.startsWith('B')) return 'text-blue-600 dark:text-blue-400';
     if (grade.startsWith('C')) return 'text-yellow-600 dark:text-yellow-400';
@@ -208,6 +209,7 @@ export const Insights: React.FC = () => {
   }
 
   function getMetricStatusColor(status: string): string {
+    if (!status) return 'text-gray-600 dark:text-gray-400';
     switch (status) {
       case 'excellent':
       case 'very_good':
@@ -252,11 +254,11 @@ export const Insights: React.FC = () => {
             <div className="space-y-6">
               {/* Overall Score */}
               <div className="text-center">
-                <div className={`text-6xl font-bold ${getHealthGradeColor(healthScore.healthGrade)} mb-2`}>
-                  {healthScore.overallScore}
+                <div className={`text-6xl font-bold ${getHealthGradeColor(healthScore?.healthGrade)} mb-2`}>
+                  {healthScore?.overallScore || 0}
                 </div>
-                <div className={`text-2xl font-semibold ${getHealthGradeColor(healthScore.healthGrade)}`}>
-                  {healthScore.healthGrade}
+                <div className={`text-2xl font-semibold ${getHealthGradeColor(healthScore?.healthGrade)}`}>
+                  {healthScore?.healthGrade || 'N/A'}
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                   Overall Financial Health
@@ -266,32 +268,32 @@ export const Insights: React.FC = () => {
               {/* Metrics Grid */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className={`text-lg font-semibold ${getMetricStatusColor(healthScore.metrics.incomeExpenseRatio.status)}`}>
-                    {healthScore.metrics.incomeExpenseRatio.score}
+                  <div className={`text-lg font-semibold ${getMetricStatusColor(healthScore?.metrics?.incomeExpenseRatio?.status)}`}>
+                    {healthScore?.metrics?.incomeExpenseRatio?.score || 0}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     Income/Expense Ratio
                   </div>
                 </div>
                 <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className={`text-lg font-semibold ${getMetricStatusColor(healthScore.metrics.savingsRate.status)}`}>
-                    {healthScore.metrics.savingsRate.score}
+                  <div className={`text-lg font-semibold ${getMetricStatusColor(healthScore?.metrics?.savingsRate?.status)}`}>
+                    {healthScore?.metrics?.savingsRate?.score || 0}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     Savings Rate
                   </div>
                 </div>
                 <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className={`text-lg font-semibold ${getMetricStatusColor(healthScore.metrics.spendingConsistency.status)}`}>
-                    {healthScore.metrics.spendingConsistency.score}
+                  <div className={`text-lg font-semibold ${getMetricStatusColor(healthScore?.metrics?.spendingConsistency?.status)}`}>
+                    {healthScore?.metrics?.spendingConsistency?.score || 0}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     Consistency
                   </div>
                 </div>
                 <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className={`text-lg font-semibold ${getMetricStatusColor(healthScore.metrics.emergencyFundScore.status)}`}>
-                    {healthScore.metrics.emergencyFundScore.score}
+                  <div className={`text-lg font-semibold ${getMetricStatusColor(healthScore?.metrics?.emergencyFundScore?.status)}`}>
+                    {healthScore?.metrics?.emergencyFundScore?.score || 0}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     Emergency Fund
@@ -305,11 +307,15 @@ export const Insights: React.FC = () => {
                   AI Recommendations
                 </h3>
                 <div className="space-y-2">
-                  {healthScore.recommendations.slice(0, 3).map((rec, index) => (
+                  {healthScore?.recommendations?.slice(0, 3).map((rec, index) => (
                     <div key={index} className="text-sm text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
                       {rec}
                     </div>
-                  ))}
+                  )) || (
+                    <div className="text-sm text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                      No recommendations available yet.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
