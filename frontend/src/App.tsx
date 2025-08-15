@@ -6,7 +6,6 @@ import { Accounts } from './pages/Accounts';
 import { Transactions } from './pages/Transactions';
 import { Budgets } from './pages/Budgets';
 import { Insights } from './pages/Insights';
-import { AIInsights } from './pages/AIInsights';
 import { Settings } from './pages/Settings';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
@@ -57,7 +56,6 @@ function App() {
                   <Route path="/transactions" element={<Transactions />} />
                   <Route path="/budgets" element={<Budgets />} />
                   <Route path="/insights" element={<Insights />} />
-                  <Route path="/ai-insights" element={<AIInsights />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 </Routes>

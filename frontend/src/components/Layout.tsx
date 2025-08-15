@@ -9,8 +9,7 @@ import {
   Menu, 
   X,
   CreditCard,
-  Target,
-  Brain
+  Target
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { Button } from './ui/Button';
@@ -25,7 +24,6 @@ const navigationItems = [
   { name: 'Transactions', href: '/transactions', icon: TrendingUp },
   { name: 'Budgets', href: '/budgets', icon: Target },
   { name: 'Insights', href: '/insights', icon: PieChart },
-  { name: 'AI Insights', href: '/ai-insights', icon: Brain },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

@@ -10,11 +10,15 @@ import {
   Lightbulb,
   BarChart3,
   LineChart,
-  Download,
-  AlertTriangle
+  AlertTriangle,
+  Heart,
+  Brain,
+  Award,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+  Minus
 } from 'lucide-react';
 import { mlApi, transactionsApi } from '../services/api';
-import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 
 export const Insights: React.FC = () => {
@@ -43,34 +47,29 @@ export const Insights: React.FC = () => {
   // Fetch spending forecast
   const { data: forecast, isLoading: isForecastLoading } = useQuery(
     'forecast',
-    () => mlApi.getForecast(30),
+    () => mlApi.getForecast(parseInt(selectedPeriod)),
     {
       retry: 3,
       refetchOnWindowFocus: false,
     }
   );
 
-  if (isDashboardLoading || isInsightsLoading || isForecastLoading) {
+  // Fetch financial health score
+  const { data: healthScore, isLoading: isHealthLoading } = useQuery(
+    'health-score',
+    mlApi.getHealthScore,
+    {
+      retry: 3,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  if (isDashboardLoading || isInsightsLoading || isForecastLoading || isHealthLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
       </div>
     );
-  }
-
-  function getCategoryColor(category: string): string {
-    const colors = {
-      food: 'bg-orange-500',
-      transport: 'bg-blue-500',
-      shopping: 'bg-purple-500',
-      entertainment: 'bg-pink-500',
-      health: 'bg-green-500',
-      utilities: 'bg-yellow-500',
-      housing: 'bg-indigo-500',
-      education: 'bg-teal-500',
-      other: 'bg-gray-500',
-    };
-    return colors[category as keyof typeof colors] || 'bg-gray-500';
   }
 
   function detectCategoryFromName(name: string): string {
@@ -100,9 +99,8 @@ export const Insights: React.FC = () => {
     // Shopping
     if (lowerName.includes('amazon') || lowerName.includes('walmart') || 
         lowerName.includes('target') || lowerName.includes('costco') ||
-        lowerName.includes('best buy') || lowerName.includes('home depot') ||
-        lowerName.includes('lowes') || lowerName.includes('macy') ||
-        lowerName.includes('nordstrom') || lowerName.includes('shop')) {
+        lowerName.includes('shop') || lowerName.includes('store') ||
+        lowerName.includes('mall') || lowerName.includes('market')) {
       return 'Shopping';
     }
     
@@ -110,236 +108,214 @@ export const Insights: React.FC = () => {
     if (lowerName.includes('netflix') || lowerName.includes('spotify') || 
         lowerName.includes('hulu') || lowerName.includes('disney') ||
         lowerName.includes('movie') || lowerName.includes('theater') ||
-        lowerName.includes('concert') || lowerName.includes('game') ||
-        lowerName.includes('steam') || lowerName.includes('playstation')) {
+        lowerName.includes('concert') || lowerName.includes('game')) {
       return 'Entertainment';
     }
     
     // Health & Fitness
     if (lowerName.includes('gym') || lowerName.includes('fitness') || 
-        lowerName.includes('pharmacy') || lowerName.includes('cvs') ||
-        lowerName.includes('walgreens') || lowerName.includes('doctor') ||
-        lowerName.includes('medical') || lowerName.includes('dental') ||
-        lowerName.includes('vision') || lowerName.includes('health')) {
+        lowerName.includes('health') || lowerName.includes('medical') ||
+        lowerName.includes('doctor') || lowerName.includes('pharmacy') ||
+        lowerName.includes('vitamin') || lowerName.includes('supplement')) {
       return 'Health & Fitness';
     }
     
     // Utilities & Bills
-    if (lowerName.includes('electric') || lowerName.includes('gas bill') || 
-        lowerName.includes('water') || lowerName.includes('internet') ||
+    if (lowerName.includes('electric') || lowerName.includes('water') || 
+        lowerName.includes('gas') || lowerName.includes('internet') ||
         lowerName.includes('phone') || lowerName.includes('cable') ||
-        lowerName.includes('at&t') || lowerName.includes('verizon') ||
-        lowerName.includes('comcast') || lowerName.includes('spectrum')) {
+        lowerName.includes('utility') || lowerName.includes('bill')) {
       return 'Utilities & Bills';
     }
     
-    // Banking & Finance
-    if (lowerName.includes('bank') || lowerName.includes('atm') || 
-        lowerName.includes('credit card') || lowerName.includes('loan') ||
-        lowerName.includes('mortgage') || lowerName.includes('insurance')) {
-      return 'Banking & Finance';
-    }
-    
     // Income
-    if (lowerName.includes('deposit') || lowerName.includes('salary') || 
-        lowerName.includes('payroll') || lowerName.includes('refund') ||
-        lowerName.includes('transfer in')) {
+    if (lowerName.includes('united') || lowerName.includes('airline') || 
+        lowerName.includes('travel') || lowerName.includes('salary') ||
+        lowerName.includes('payment') || lowerName.includes('deposit') ||
+        lowerName.includes('refund') || lowerName.includes('credit')) {
       return 'Income';
     }
     
     return 'Other';
   }
 
-  function getCategoryIcon(category: string[] | undefined, transactionName?: string): React.ReactNode {
-    // First try to use Plaid categories
-    if (category?.includes('food') || category?.includes('restaurant')) {
-      return <span className="text-orange-500">🍽️</span>;
-    } else if (category?.includes('transport') || category?.includes('travel')) {
-      return <span className="text-blue-500">🚗</span>;
-    } else if (category?.includes('shopping')) {
-      return <span className="text-purple-500">🛍️</span>;
-    } else if (category?.includes('entertainment')) {
-      return <span className="text-pink-500">🎬</span>;
-    } else if (category?.includes('health')) {
-      return <span className="text-green-500">🏥</span>;
-    } else if (category?.includes('utilities') || category?.includes('bills')) {
-      return <span className="text-yellow-500">💡</span>;
-    } else if (category?.includes('housing') || category?.includes('rent')) {
-      return <span className="text-indigo-500">🏠</span>;
-    } else if (category?.includes('education')) {
-      return <span className="text-teal-500">📚</span>;
-    }
+  function getCategoryIcon(transactionName: string): React.ReactNode {
+    const detectedCategory = detectCategoryFromName(transactionName);
     
-    // Fallback to name-based detection
-    if (transactionName) {
-      const detectedCategory = detectCategoryFromName(transactionName);
-      if (detectedCategory === 'Food & Dining') return <span className="text-orange-500">🍽️</span>;
-      if (detectedCategory === 'Transportation') return <span className="text-blue-500">🚗</span>;
-      if (detectedCategory === 'Shopping') return <span className="text-purple-500">🛍️</span>;
-      if (detectedCategory === 'Entertainment') return <span className="text-pink-500">🎬</span>;
-      if (detectedCategory === 'Health & Fitness') return <span className="text-green-500">🏥</span>;
-      if (detectedCategory === 'Utilities & Bills') return <span className="text-yellow-500">💡</span>;
-      if (detectedCategory === 'Banking & Finance') return <span className="text-indigo-500">🏦</span>;
-      if (detectedCategory === 'Income') return <span className="text-teal-500">💰</span>;
+    switch (detectedCategory) {
+      case 'Food & Dining':
+        return <span className="text-2xl">🍕</span>;
+      case 'Transportation':
+        return <span className="text-2xl">🚗</span>;
+      case 'Shopping':
+        return <span className="text-2xl">🛍️</span>;
+      case 'Entertainment':
+        return <span className="text-2xl">🎬</span>;
+      case 'Health & Fitness':
+        return <span className="text-2xl">💪</span>;
+      case 'Utilities & Bills':
+        return <span className="text-2xl">💡</span>;
+      case 'Income':
+        return <span className="text-2xl">💰</span>;
+      default:
+        return <span className="text-2xl">��</span>;
     }
-    
-    return <span className="text-gray-500">💰</span>;
   }
 
-  function getInsightIcon(insightType: string): React.ReactNode {
+  function getInsightIcon(insightType: string) {
     switch (insightType) {
       case 'trend':
-        return <TrendingUp className="h-5 w-5 text-blue-500" />;
+        return <TrendingUpIcon className="h-5 w-5 text-blue-500" />;
       case 'anomaly':
         return <AlertTriangle className="h-5 w-5 text-red-500" />;
       case 'recommendation':
         return <Lightbulb className="h-5 w-5 text-yellow-500" />;
+      case 'pattern':
+        return <BarChart3 className="h-5 w-5 text-purple-500" />;
+      case 'alert':
+        return <AlertTriangle className="h-5 w-5 text-orange-500" />;
+      case 'positive':
+        return <Award className="h-5 w-5 text-green-500" />;
       default:
         return <Lightbulb className="h-5 w-5 text-gray-500" />;
     }
   }
 
-  function getTrendIcon(trend: string): React.ReactNode {
+  function getTrendIcon(trend: string) {
     switch (trend) {
       case 'increasing':
-        return <TrendingUp className="h-4 w-4 text-red-500" />;
+        return <TrendingUpIcon className="h-4 w-4 text-red-500" />;
       case 'decreasing':
-        return <TrendingDown className="h-4 w-4 text-green-500" />;
+        return <TrendingDownIcon className="h-4 w-4 text-green-500" />;
+      case 'stable':
+        return <Minus className="h-4 w-4 text-gray-500" />;
       default:
-        return <BarChart3 className="h-4 w-4 text-gray-500" />;
+        return <Minus className="h-4 w-4 text-gray-500" />;
+    }
+  }
+
+  function getHealthGradeColor(grade: string): string {
+    if (grade.startsWith('A')) return 'text-green-600 dark:text-green-400';
+    if (grade.startsWith('B')) return 'text-blue-600 dark:text-blue-400';
+    if (grade.startsWith('C')) return 'text-yellow-600 dark:text-yellow-400';
+    if (grade.startsWith('D')) return 'text-orange-600 dark:text-orange-400';
+    return 'text-red-600 dark:text-red-400';
+  }
+
+  function getMetricStatusColor(status: string): string {
+    switch (status) {
+      case 'excellent':
+      case 'very_good':
+        return 'text-green-600 dark:text-green-400';
+      case 'good':
+        return 'text-blue-600 dark:text-blue-400';
+      case 'fair':
+        return 'text-yellow-600 dark:text-yellow-400';
+      case 'concerning':
+      case 'inadequate':
+        return 'text-orange-600 dark:text-orange-400';
+      case 'critical':
+      case 'negative':
+        return 'text-red-600 dark:text-red-400';
+      default:
+        return 'text-gray-600 dark:text-gray-400';
     }
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Insights
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            AI-powered spending analysis and financial insights
-          </p>
-        </div>
-
-        <div className="flex space-x-3">
-          <select
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          >
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="365">Last year</option>
-          </select>
-          <Button variant="outline" size="md">
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          AI-Powered Financial Insights
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Discover personalized financial analysis, predictions, and recommendations powered by artificial intelligence.
+        </p>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
-              <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Balance</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${dashboardData?.totalBalance?.toLocaleString() || '0'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-              <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Income</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                ${dashboardData?.monthlyIncome?.toLocaleString() || '0'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-3 bg-red-100 dark:bg-red-900 rounded-full">
-              <TrendingDown className="h-6 w-6 text-red-600 dark:text-red-400" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Expenses</p>
-              <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                ${dashboardData?.monthlyExpenses?.toLocaleString() || '0'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
-              <Target className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Savings</p>
-              <p className={`text-2xl font-bold ${(dashboardData?.monthlySavings || 0) >= 0 ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'}`}>
-                ${Math.abs(dashboardData?.monthlySavings || 0).toLocaleString()}
-                {(dashboardData?.monthlySavings || 0) < 0 && ' (Deficit)'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Spending by Category */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Financial Health Score */}
         <div className="card">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Spending by Category
+              Financial Health Score
             </h2>
-            <PieChart className="h-5 w-5 text-gray-400" />
+            <Heart className="h-6 w-6 text-red-500" />
           </div>
 
-          <div className="space-y-4">
-            {dashboardData?.spendingByCategory && dashboardData.spendingByCategory.length > 0 ? (
-              dashboardData.spendingByCategory.map((category) => (
-                <div key={category.category} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className={`w-3 h-3 rounded-full ${getCategoryColor(category.category)} mr-3`} />
-                    <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
-                      {category.category}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      ${category.amount.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {category.percentage.toFixed(1)}%
-                    </p>
-                  </div>
+          {healthScore ? (
+            <div className="space-y-6">
+              {/* Overall Score */}
+              <div className="text-center">
+                <div className={`text-6xl font-bold ${getHealthGradeColor(healthScore.healthGrade)} mb-2`}>
+                  {healthScore.overallScore}
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-8">
-                <PieChart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">
-                  No spending data available. Connect your bank account to see category breakdowns.
+                <div className={`text-2xl font-semibold ${getHealthGradeColor(healthScore.healthGrade)}`}>
+                  {healthScore.healthGrade}
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Overall Financial Health
                 </p>
               </div>
-            )}
-          </div>
+
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className={`text-lg font-semibold ${getMetricStatusColor(healthScore.metrics.incomeExpenseRatio.status)}`}>
+                    {healthScore.metrics.incomeExpenseRatio.score}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Income/Expense Ratio
+                  </div>
+                </div>
+                <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className={`text-lg font-semibold ${getMetricStatusColor(healthScore.metrics.savingsRate.status)}`}>
+                    {healthScore.metrics.savingsRate.score}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Savings Rate
+                  </div>
+                </div>
+                <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className={`text-lg font-semibold ${getMetricStatusColor(healthScore.metrics.spendingConsistency.status)}`}>
+                    {healthScore.metrics.spendingConsistency.score}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Consistency
+                  </div>
+                </div>
+                <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className={`text-lg font-semibold ${getMetricStatusColor(healthScore.metrics.emergencyFundScore.status)}`}>
+                    {healthScore.metrics.emergencyFundScore.score}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Emergency Fund
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommendations */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                  AI Recommendations
+                </h3>
+                <div className="space-y-2">
+                  {healthScore.recommendations.slice(0, 3).map((rec, index) => (
+                    <div key={index} className="text-sm text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                      {rec}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">
+                No health score data available.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* AI Insights */}
@@ -348,7 +324,7 @@ export const Insights: React.FC = () => {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               AI Insights
             </h2>
-            <Lightbulb className="h-5 w-5 text-gray-400" />
+            <Brain className="h-6 w-6 text-purple-500" />
           </div>
 
           <div className="space-y-4">
@@ -365,17 +341,20 @@ export const Insights: React.FC = () => {
                         {insight.description}
                       </p>
                       {insight.category && (
-                        <span className="inline-block mt-2 px-2 py-1 text-xs bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded">
+                        <span className="inline-block mt-2 px-2 py-1 text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded">
                           {insight.category}
                         </span>
                       )}
+                      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        Confidence: {(insight.confidenceScore * 100).toFixed(0)}%
+                      </div>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
               <div className="text-center py-8">
-                <Lightbulb className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <Brain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500 dark:text-gray-400">
                   AI insights will appear here as you add more transactions.
                 </p>
@@ -385,41 +364,136 @@ export const Insights: React.FC = () => {
         </div>
       </div>
 
-      {/* Spending Forecast */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Spending Forecast (Next 30 Days)
-          </h2>
-          <LineChart className="h-5 w-5 text-gray-400" />
+      {/* Monthly Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Total Balance
+            </h3>
+            <DollarSign className="h-5 w-5 text-gray-400" />
+          </div>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            ${(dashboardData?.totalBalance || 0).toLocaleString()}
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {forecast && forecast.length > 0 ? (
-            forecast.map((item, index) => (
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Monthly Income
+            </h3>
+            <TrendingUp className="h-5 w-5 text-green-500" />
+          </div>
+          <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+            +${(dashboardData?.monthlyIncome || 0).toLocaleString()}
+          </p>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Monthly Expenses
+            </h3>
+            <TrendingDown className="h-5 w-5 text-red-500" />
+          </div>
+          <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+            -${(dashboardData?.monthlyExpenses || 0).toLocaleString()}
+          </p>
+        </div>
+      </div>
+
+      {/* Monthly Savings */}
+      <div className="card mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Monthly Savings
+          </h2>
+          <Target className="h-5 w-5 text-gray-400" />
+        </div>
+        <div className="text-center">
+          <p className={`text-4xl font-bold ${(dashboardData?.monthlySavings || 0) >= 0 ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'}`}>
+            ${Math.abs(dashboardData?.monthlySavings || 0).toLocaleString()}
+            {(dashboardData?.monthlySavings || 0) < 0 && ' (Deficit)'}
+          </p>
+        </div>
+      </div>
+
+      {/* Spending by Category */}
+      {dashboardData?.spendingByCategory && dashboardData.spendingByCategory.length > 0 ? (
+        <div className="card mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Spending by Category
+            </h2>
+            <PieChart className="h-5 w-5 text-gray-400" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {dashboardData.spendingByCategory.map((item, index) => (
               <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
                     {item.category}
                   </span>
-                  {getTrendIcon(item.trend)}
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {item.percentage.toFixed(1)}%
+                  </span>
                 </div>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  ${item.amount.toFixed(2)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Spending Forecast */}
+      <div className="card mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            AI Spending Forecast
+          </h2>
+          <div className="flex items-center space-x-4">
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            >
+              <option value="7">7 days</option>
+              <option value="30">30 days</option>
+              <option value="90">90 days</option>
+            </select>
+            <LineChart className="h-6 w-6 text-blue-500" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {forecast && forecast.length > 0 ? (
+            forecast.map((item, index) => (
+              <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-medium text-gray-900 dark:text-white">
+                    {item.category}
+                  </h3>
+                  {getTrendIcon(item.trend)}
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                   ${item.forecastAmount.toFixed(2)}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Confidence: {item.confidenceIntervalLower.toFixed(0)}% - {item.confidenceIntervalUpper.toFixed(0)}%
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  Confidence: ${item.confidenceIntervalLower.toFixed(2)} - ${item.confidenceIntervalUpper.toFixed(2)}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
                   Trend: {item.trend}
-                </p>
+                </div>
               </div>
             ))
           ) : (
             <div className="col-span-full text-center py-8">
               <LineChart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 dark:text-gray-400">
-                Spending forecasts will appear here as we analyze your spending patterns.
+                No forecast data available.
               </p>
             </div>
           )}
@@ -427,7 +501,7 @@ export const Insights: React.FC = () => {
       </div>
 
       {/* Recent Transactions Summary */}
-      <div className="card">
+      <div className="card mb-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Recent Activity
@@ -446,7 +520,7 @@ export const Insights: React.FC = () => {
             <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
               <div className="flex items-center">
                 <div className="flex-shrink-0 mr-3">
-                  {getCategoryIcon(transaction.category, transaction.name)}
+                  {getCategoryIcon(transaction.name)}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
