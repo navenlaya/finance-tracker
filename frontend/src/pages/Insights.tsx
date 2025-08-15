@@ -96,11 +96,15 @@ export const Insights: React.FC = () => {
       return 'Transportation';
     }
     
-    // Shopping
+    // Shopping & Electronics
     if (lowerName.includes('amazon') || lowerName.includes('walmart') || 
         lowerName.includes('target') || lowerName.includes('costco') ||
         lowerName.includes('shop') || lowerName.includes('store') ||
-        lowerName.includes('mall') || lowerName.includes('market')) {
+        lowerName.includes('mall') || lowerName.includes('market') ||
+        lowerName.includes('sparkfun') || lowerName.includes('electronics') ||
+        lowerName.includes('tech') || lowerName.includes('computer') ||
+        lowerName.includes('best buy') || lowerName.includes('apple') ||
+        lowerName.includes('samsung') || lowerName.includes('dell')) {
       return 'Shopping';
     }
     
@@ -132,7 +136,8 @@ export const Insights: React.FC = () => {
     if (lowerName.includes('united') || lowerName.includes('airline') || 
         lowerName.includes('travel') || lowerName.includes('salary') ||
         lowerName.includes('payment') || lowerName.includes('deposit') ||
-        lowerName.includes('refund') || lowerName.includes('credit')) {
+        lowerName.includes('refund') || lowerName.includes('credit') ||
+        lowerName.includes('intrst') || lowerName.includes('pymnt')) {
       return 'Income';
     }
     
